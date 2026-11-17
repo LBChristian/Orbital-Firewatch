@@ -1,0 +1,53 @@
+{
+  "description": "Bundled NASA FIRMS VIIRS NOAA-20 snapshot rows for ORBITAL FIREWATCH missions. Rows are verbatim copies of the source CSV, selected only by bounding box and acquisition date. Not modified.",
+  "provider": "NASA FIRMS (LANCE)",
+  "product": "VIIRS_NOAA20_NRT",
+  "productDescription": "VIIRS 375 m active fire / thermal anomaly product (NOAA-20), Collection 2 NRT",
+  "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+  "retrievedAtUtc": "2026-11-17T17:11:12Z",
+  "usageNotes": "NASA FIRMS data are openly shared. Active-fire/thermal-anomaly detections have limitations (e.g. cloud obscuration, non-fire hot sources) and must not be used for the preservation of life or property. Attribution: NASA FIRMS / LANCE. Not affiliated with or endorsed by NASA.",
+  "snapshots": [
+    {
+      "missionId": "m01-first-pass",
+      "regionName": "Northern California",
+      "area": {
+        "west": -124.6,
+        "south": 38,
+        "east": -120.8,
+        "north": 42.2
+      },
+      "acquisitionDate": "2026-11-16",
+      "dayRange": 1,
+      "file": "data/firms/m01-first-pass_2026-11-16.csv",
+      "rowCount": 85
+    },
+    {
+      "missionId": "m02-split-front",
+      "regionName": "Zambezi Fronts (Zambia / Zimbabwe / Malawi / Mozambique)",
+      "area": {
+        "west": 24,
+        "south": -20.5,
+        "east": 35.5,
+        "north": -8
+      },
+      "acquisitionDate": "2026-11-14",
+      "dayRange": 1,
+      "file": "data/firms/m02-split-front_2026-11-14.csv",
+      "rowCount": 1512
+    },
+    {
+      "missionId": "m03-data-bottleneck",
+      "regionName": "Central New South Wales",
+      "area": {
+        "west": 146,
+        "south": -35.6,
+        "east": 150.2,
+        "north": -31.2
+      },
+      "acquisitionDate": "2026-11-15",
+      "dayRange": 1,
+      "file": "data/firms/m03-data-bottleneck_2026-11-15.csv",
+      "rowCount": 160
+    }
+  ]
+}

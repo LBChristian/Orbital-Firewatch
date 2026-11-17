@@ -1,0 +1,33 @@
+{
+  "name": "orbital-firewatch",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ORBITAL FIREWATCH - independent educational satellite mission-design game using NASA FIRMS and GIBS data. Not affiliated with or endorsed by NASA.",
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "concurrently -k -n api,web -c cyan,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev -w @ofw/api",
+    "dev:web": "npm run dev -w @ofw/web",
+    "typecheck": "npm run typecheck -w @ofw/simulation && npm run typecheck -w @ofw/api && npm run typecheck -w @ofw/web",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "build": "npm run build -w @ofw/web && npm run build -w @ofw/api",
+    "start": "node apps/api/dist/server.js",
+    "balance": "tsx scripts/balance-report.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "concurrently": "^10.0.7",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
