@@ -11,12 +11,26 @@ import {
 } from '@ofw/simulation';
 import type { FeedMode } from '../state/store';
 
-export interface SnapshotManifest {
-  product: string;
+export interface SnapshotEntry {
+  missionId: string;
+  regionName: string;
+  acquisitionDate: string;
+  file: string;
+  rowCount: number;
   sourceUrl: string;
   retrievedAtUtc: string;
+  sourceSha256: string | null;
+  fileSha256: string;
+  confidenceDistribution: Record<string, number>;
+  imagery: { provider: string; layerId: string; date: string; dateMatchesAcquisition: boolean };
+}
+
+export interface SnapshotManifest {
+  schemaVersion: number;
+  product: string;
+  productDescription: string;
   usageNotes: string;
-  snapshots: { missionId: string; regionName: string; acquisitionDate: string; file: string; rowCount: number }[];
+  snapshots: SnapshotEntry[];
 }
 
 export interface FeedResult {
@@ -59,6 +73,7 @@ export function loadManifest(): Promise<SnapshotManifest | null> {
 /** Load the bundled snapshot directly from static files (works without the API). */
 export async function loadStaticSnapshot(m: MissionDef): Promise<FirmsFeedEnvelope | null> {
   const manifest = await loadManifest();
+  const entry = manifest?.snapshots.find((s) => s.missionId === m.id);
   try {
     const res = await fetch('/' + m.firms.snapshotFile);
     if (!res.ok) return null;
@@ -70,13 +85,13 @@ export async function loadStaticSnapshot(m: MissionDef): Promise<FirmsFeedEnvelo
       area: m.bbox,
       dayRange: m.firms.dayRange,
       requestedDate: m.firms.date,
-      fetchedAtUtc: manifest?.retrievedAtUtc ?? 'unknown',
+      fetchedAtUtc: entry?.retrievedAtUtc ?? 'unknown',
       state: 'HISTORICAL',
       warnings: [
         `Bundled NASA FIRMS snapshot (acquisition date ${m.firms.date} UTC), loaded from static files.`,
         ...warnings,
       ],
-      sourceUrl: manifest?.sourceUrl,
+      sourceUrl: entry?.sourceUrl,
     });
   } catch {
     return null;

@@ -21,3 +21,9 @@
 | 17 | Use CubeSat 101 and Concept Maturity Levels (both on the CH13 list) | Team chose this option; FIRMS and GIBS are not on the list | Yes |
 | 18 | Citations live in config with printed page numbers, paraphrased, never long quotes | Keeps claims checkable and within copyright limits | Yes |
 | 19 | The notional bus is described as a small satellite (<300 kg), not a CubeSat | CubeSat 101 defines both; the game bus is 40–68 kg | Yes |
+| 20 | Update 1 specs kept in `docs/update-1/`; the AI-generated concept images were left out | The specs guide the work; the images are mood references only and add 2.3 MB | Yes |
+| 21 | M06 Polar Watch moved from Alaska/Yukon to the West Siberian Plain | Alaska/Yukon had one FIRMS detection a day in the available window. Siberia has 39 groups above 60° N, out of reach of a 53° orbit. Briefing must say many may be industrial heat sources | Yes, if a later download has Alaska data |
+| 22 | All M04–M10 snapshots come from one 7-day download (2026-11-18) kept in git-ignored `data-raw/` | The public file rolls daily; one hashed download makes the batch reproducible | Yes |
+| 23 | Snapshot provenance is per snapshot (manifest schema v2), not top level | M01–M03 and M04–M10 come from different downloads | Yes |
+| 24 | Snapshot CSVs are `-text` in `.gitattributes` | Windows `core.autocrlf` would change their bytes and break the hashes | Yes |
+| 25 | M08 widened to 121–146° E; M09 moved to Tanzania/Kenya | M08 needs room for two consecutive-orbit tracks (about 24° apart); the East African candidate was far too dense | Yes |

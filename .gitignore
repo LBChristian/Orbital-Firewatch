@@ -38,3 +38,6 @@ START_HERE.md
 ASSET_CREDITS_TEMPLATE.md
 CLAUDE.md
 .claude/
+
+# raw upstream downloads (large; provenance recorded in the snapshot manifest)
+data-raw/

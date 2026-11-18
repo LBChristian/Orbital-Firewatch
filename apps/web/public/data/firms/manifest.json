@@ -1,15 +1,15 @@
 {
+  "schemaVersion": 2,
   "description": "Bundled NASA FIRMS VIIRS NOAA-20 snapshot rows for ORBITAL FIREWATCH missions. Rows are verbatim copies of the source CSV, selected only by bounding box and acquisition date. Not modified.",
   "provider": "NASA FIRMS (LANCE)",
   "product": "VIIRS_NOAA20_NRT",
   "productDescription": "VIIRS 375 m active fire / thermal anomaly product (NOAA-20), Collection 2 NRT",
-  "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
-  "retrievedAtUtc": "2026-11-17T17:11:12Z",
   "usageNotes": "NASA FIRMS data are openly shared. Active-fire/thermal-anomaly detections have limitations (e.g. cloud obscuration, non-fire hot sources) and must not be used for the preservation of life or property. Attribution: NASA FIRMS / LANCE. Not affiliated with or endorsed by NASA.",
   "snapshots": [
     {
       "missionId": "m01-first-pass",
       "regionName": "Northern California",
+      "product": "VIIRS_NOAA20_NRT",
       "area": {
         "west": -124.6,
         "south": 38,
@@ -19,11 +19,35 @@
       "acquisitionDate": "2026-11-16",
       "dayRange": 1,
       "file": "data/firms/m01-first-pass_2026-11-16.csv",
-      "rowCount": 85
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-17T17:11:12Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d.csv",
+      "sourceSha256": null,
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 85,
+      "fileSha256": "97631df9e56a63062c78fa451313de852ac016bc4c9a9046f7db038a433eec12",
+      "confidenceDistribution": {
+        "nominal": 85
+      },
+      "dayNightDistribution": {
+        "N": 1,
+        "D": 84
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-16T10:02Z",
+        "2026-11-16T21:27Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "MODIS_Terra_CorrectedReflectance_TrueColor",
+        "date": "2026-11-16",
+        "dateMatchesAcquisition": true
+      }
     },
     {
       "missionId": "m02-split-front",
       "regionName": "Zambezi Fronts (Zambia / Zimbabwe / Malawi / Mozambique)",
+      "product": "VIIRS_NOAA20_NRT",
       "area": {
         "west": 24,
         "south": -20.5,
@@ -33,11 +57,37 @@
       "acquisitionDate": "2026-11-14",
       "dayRange": 1,
       "file": "data/firms/m02-split-front_2026-11-14.csv",
-      "rowCount": 1512
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-17T17:11:12Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d.csv",
+      "sourceSha256": null,
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 1512,
+      "fileSha256": "d279f4d2c3c488e6e9a0fcdb7a8635c676f75430d3343d50b4274a171ab02bc0",
+      "confidenceDistribution": {
+        "low": 504,
+        "nominal": 994,
+        "high": 14
+      },
+      "dayNightDistribution": {
+        "D": 1366,
+        "N": 146
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-14T11:38Z",
+        "2026-11-14T22:50Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-14",
+        "dateMatchesAcquisition": true
+      }
     },
     {
       "missionId": "m03-data-bottleneck",
       "regionName": "Central New South Wales",
+      "product": "VIIRS_NOAA20_NRT",
       "area": {
         "west": 146,
         "south": -35.6,
@@ -47,7 +97,309 @@
       "acquisitionDate": "2026-11-15",
       "dayRange": 1,
       "file": "data/firms/m03-data-bottleneck_2026-11-15.csv",
-      "rowCount": 160
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-17T17:11:12Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d.csv",
+      "sourceSha256": null,
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 160,
+      "fileSha256": "4a8fc1a4d848318420932e230ce1721a51e98e7665b240cb5bd546fbf54bcaa5",
+      "confidenceDistribution": {
+        "nominal": 104,
+        "low": 56
+      },
+      "dayNightDistribution": {
+        "D": 160
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-15T04:27Z",
+        "2026-11-15T04:27Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-15",
+        "dateMatchesAcquisition": true
+      }
+    },
+    {
+      "missionId": "m04-shadow-line",
+      "regionName": "Maranhão and Tocantins, Brazil (eastern Amazon / Cerrado edge)",
+      "product": "VIIRS_NOAA20_NRT",
+      "area": {
+        "west": -50,
+        "south": -10,
+        "east": -44,
+        "north": -3
+      },
+      "acquisitionDate": "2026-11-14",
+      "dayRange": 1,
+      "file": "data/firms/m04-shadow-line_2026-11-14.csv",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-18T19:58:51Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d_retrieved-2026-11-18T19-58-51Z.csv",
+      "sourceSha256": "885db08a9ef336c06a6f8115b38c6d3b6f480b2815dc252f5875f8cb6be507db",
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 751,
+      "fileSha256": "16663bdc0b49c531d5c81f19f66882eb204e48d12d8afcdef35866c9b2bf3a9d",
+      "confidenceDistribution": {
+        "nominal": 723,
+        "high": 3,
+        "low": 25
+      },
+      "dayNightDistribution": {
+        "N": 231,
+        "D": 520
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-14T04:08Z",
+        "2026-11-14T16:45Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-14",
+        "dateMatchesAcquisition": true
+      }
+    },
+    {
+      "missionId": "m05-dead-air",
+      "regionName": "Borneo (Indonesia / Malaysia / Brunei)",
+      "product": "VIIRS_NOAA20_NRT",
+      "area": {
+        "west": 108,
+        "south": -4.5,
+        "east": 119,
+        "north": 7.5
+      },
+      "acquisitionDate": "2026-11-15",
+      "dayRange": 1,
+      "file": "data/firms/m05-dead-air_2026-11-15.csv",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-18T19:58:51Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d_retrieved-2026-11-18T19-58-51Z.csv",
+      "sourceSha256": "885db08a9ef336c06a6f8115b38c6d3b6f480b2815dc252f5875f8cb6be507db",
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 159,
+      "fileSha256": "07f3f6172e7820840ed07deff38c9df9a5c20a67dc6b320544a0400149420bda",
+      "confidenceDistribution": {
+        "nominal": 138,
+        "high": 18,
+        "low": 3
+      },
+      "dayNightDistribution": {
+        "D": 99,
+        "N": 60
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-15T06:18Z",
+        "2026-11-15T17:19Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-15",
+        "dateMatchesAcquisition": true
+      }
+    },
+    {
+      "missionId": "m06-polar-watch",
+      "regionName": "West Siberian Plain, Russia",
+      "product": "VIIRS_NOAA20_NRT",
+      "area": {
+        "west": 64,
+        "south": 58,
+        "east": 84,
+        "north": 68
+      },
+      "acquisitionDate": "2026-11-16",
+      "dayRange": 1,
+      "file": "data/firms/m06-polar-watch_2026-11-16.csv",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-18T19:58:51Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d_retrieved-2026-11-18T19-58-51Z.csv",
+      "sourceSha256": "885db08a9ef336c06a6f8115b38c6d3b6f480b2815dc252f5875f8cb6be507db",
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 150,
+      "fileSha256": "07b20988a095edc4334159fd57b1f78e77977256bdd8cfff19dfd543c64b16c7",
+      "confidenceDistribution": {
+        "nominal": 149,
+        "low": 1
+      },
+      "dayNightDistribution": {
+        "N": 142,
+        "D": 8
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-16T01:24Z",
+        "2026-11-16T23:28Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "MODIS_Terra_CorrectedReflectance_TrueColor",
+        "date": "2026-11-16",
+        "dateMatchesAcquisition": true
+      }
+    },
+    {
+      "missionId": "m07-signal-triage",
+      "regionName": "Mainland Southeast Asia",
+      "product": "VIIRS_NOAA20_NRT",
+      "area": {
+        "west": 97,
+        "south": 10,
+        "east": 109,
+        "north": 23
+      },
+      "acquisitionDate": "2026-11-16",
+      "dayRange": 1,
+      "file": "data/firms/m07-signal-triage_2026-11-16.csv",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-18T19:58:51Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d_retrieved-2026-11-18T19-58-51Z.csv",
+      "sourceSha256": "885db08a9ef336c06a6f8115b38c6d3b6f480b2815dc252f5875f8cb6be507db",
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 299,
+      "fileSha256": "402ccb866e036b59773ef14a2bf4722d750ffc1fff26ea1fcc7543f72dd9cd7d",
+      "confidenceDistribution": {
+        "low": 8,
+        "nominal": 289,
+        "high": 2
+      },
+      "dayNightDistribution": {
+        "D": 238,
+        "N": 61
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-16T06:03Z",
+        "2026-11-16T18:38Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-16",
+        "dateMatchesAcquisition": true
+      }
+    },
+    {
+      "missionId": "m08-second-look",
+      "regionName": "Northern and central Australia",
+      "product": "VIIRS_NOAA20_NRT",
+      "area": {
+        "west": 121,
+        "south": -28,
+        "east": 146,
+        "north": -15
+      },
+      "acquisitionDate": "2026-11-16",
+      "dayRange": 1,
+      "file": "data/firms/m08-second-look_2026-11-16.csv",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-18T19:58:51Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d_retrieved-2026-11-18T19-58-51Z.csv",
+      "sourceSha256": "885db08a9ef336c06a6f8115b38c6d3b6f480b2815dc252f5875f8cb6be507db",
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 3280,
+      "fileSha256": "99fe8ba0713b262559ea6463297d423acf969ac75a6df5f16fce3ddfb642c574",
+      "confidenceDistribution": {
+        "nominal": 2900,
+        "low": 194,
+        "high": 186
+      },
+      "dayNightDistribution": {
+        "D": 1740,
+        "N": 1540
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-16T04:12Z",
+        "2026-11-16T17:06Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-16",
+        "dateMatchesAcquisition": true
+      }
+    },
+    {
+      "missionId": "m09-hard-limits",
+      "regionName": "Tanzania and southern Kenya",
+      "product": "VIIRS_NOAA20_NRT",
+      "area": {
+        "west": 29,
+        "south": -10,
+        "east": 41,
+        "north": 0
+      },
+      "acquisitionDate": "2026-11-15",
+      "dayRange": 1,
+      "file": "data/firms/m09-hard-limits_2026-11-15.csv",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-18T19:58:51Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d_retrieved-2026-11-18T19-58-51Z.csv",
+      "sourceSha256": "885db08a9ef336c06a6f8115b38c6d3b6f480b2815dc252f5875f8cb6be507db",
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 367,
+      "fileSha256": "6751befc42ce48e5c20dbc7938354ad97c5bc5c67be849908c32dc1d1fda9d93",
+      "confidenceDistribution": {
+        "nominal": 339,
+        "low": 27,
+        "high": 1
+      },
+      "dayNightDistribution": {
+        "N": 11,
+        "D": 356
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-15T00:24Z",
+        "2026-11-15T22:26Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-15",
+        "dateMatchesAcquisition": true
+      }
+    },
+    {
+      "missionId": "m10-final-firewatch",
+      "regionName": "West African Sudanian and Sahel belt",
+      "product": "VIIRS_NOAA20_NRT",
+      "area": {
+        "west": -17,
+        "south": 6,
+        "east": 15,
+        "north": 14
+      },
+      "acquisitionDate": "2026-11-13",
+      "dayRange": 1,
+      "file": "data/firms/m10-final-firewatch_2026-11-13.csv",
+      "sourceUrl": "https://firms.modaps.eosdis.nasa.gov/data/active_fire/noaa-20-viirs-c2/csv/J1_VIIRS_C2_Global_7d.csv",
+      "retrievedAtUtc": "2026-11-18T19:58:51Z",
+      "sourceFile": "J1_VIIRS_C2_Global_7d_retrieved-2026-11-18T19-58-51Z.csv",
+      "sourceSha256": "885db08a9ef336c06a6f8115b38c6d3b6f480b2815dc252f5875f8cb6be507db",
+      "selection": "Rows with acq_date equal to acquisitionDate and latitude/longitude inside area (inclusive). Copied verbatim.",
+      "rowCount": 4661,
+      "fileSha256": "e9c820d88229d2491f9f96c3aaeb50c28a0b236cd3680d9a608e609a8f30a8b8",
+      "confidenceDistribution": {
+        "nominal": 3611,
+        "high": 168,
+        "low": 882
+      },
+      "dayNightDistribution": {
+        "N": 636,
+        "D": 4025
+      },
+      "acquisitionTimeRangeUtc": [
+        "2026-11-13T00:58Z",
+        "2026-11-13T13:48Z"
+      ],
+      "imagery": {
+        "provider": "NASA GIBS",
+        "layerId": "VIIRS_NOAA20_CorrectedReflectance_TrueColor",
+        "date": "2026-11-13",
+        "dateMatchesAcquisition": true
+      }
     }
   ]
 }

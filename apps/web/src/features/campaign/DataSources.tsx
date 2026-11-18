@@ -111,15 +111,13 @@ export function DataSources() {
             <dd>
               {manifest.product}: NASA FIRMS VIIRS NOAA-20 375 m, Collection 2 NRT
             </dd>
-            <dt>Source file</dt>
-            <dd className="mono wrap">{manifest.sourceUrl}</dd>
-            <dt>Retrieved</dt>
-            <dd className="mono">{fmtUtc(manifest.retrievedAtUtc)}</dd>
             {manifest.snapshots.map((s) => (
               <div key={s.missionId} className="contents">
                 <dt>{s.missionId.slice(0, 3).toUpperCase()}</dt>
                 <dd>
-                  {s.regionName}: {s.rowCount} rows acquired {s.acquisitionDate} (UTC), copied verbatim
+                  {s.regionName}: {s.rowCount} rows acquired {s.acquisitionDate} (UTC), copied verbatim. Retrieved{' '}
+                  <span className="mono">{fmtUtc(s.retrievedAtUtc)}</span> from <span className="mono wrap">{s.sourceUrl}</span>. Imagery: {s.imagery.layerId}, {s.imagery.date}
+                  {s.imagery.dateMatchesAcquisition ? ' (same date)' : ' (different date)'}.
                 </dd>
               </div>
             ))}

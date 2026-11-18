@@ -15,6 +15,13 @@ export function TitleScreen() {
   const reducedMotion = useGame((s) => s.settings.reducedMotion);
   const loadouts = useGame((s) => s.loadouts);
   const [manifest, setManifest] = useState<SnapshotManifest | null>(null);
+  const snapDates = manifest?.snapshots.length
+    ? ([
+        manifest.snapshots.map((s) => s.acquisitionDate).sort()[0],
+        manifest.snapshots.map((s) => s.acquisitionDate).sort().at(-1)!,
+        manifest.snapshots.map((s) => s.retrievedAtUtc).sort().at(-1)!,
+      ] as const)
+    : null;
   useEffect(() => {
     void loadManifest().then(setManifest);
   }, []);
@@ -60,7 +67,8 @@ export function TitleScreen() {
             <span>{server ? (server.keyConfigured ? 'Live FIRMS feed available' : 'Game server online, no FIRMS key') : 'Game server offline: static data only'}</span>
           </div>
           <div className="tiny muted">
-            Bundled snapshot: NASA FIRMS VIIRS NOAA-20, acquisitions 14–16 Nov 2026, retrieved {fmtUtc(manifest?.retrievedAtUtc)}.
+            Bundled snapshots: NASA FIRMS VIIRS NOAA-20
+            {snapDates && <>, acquisitions {snapDates[0]} to {snapDates[1]} (UTC), last retrieved {fmtUtc(snapDates[2])}</>}.
             {server?.lastRetrievalUtc && <> Last live retrieval {fmtUtc(server.lastRetrievalUtc)}.</>}
           </div>
         </section>

@@ -1,0 +1,2 @@
+# Bundled data snapshots are hashed in the manifest; keep them byte-exact on every OS.
+apps/web/public/data/firms/*.csv -text

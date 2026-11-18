@@ -16,8 +16,9 @@ import type { FirmsAreaQuery } from '../validation/schemas';
 
 export interface SnapshotManifest {
   product: string;
-  sourceUrl: string;
-  retrievedAtUtc: string;
+  /** Schema v1 kept the source at the top level; v2 keeps it per snapshot. */
+  sourceUrl?: string;
+  retrievedAtUtc?: string;
   snapshots: {
     missionId: string;
     regionName: string;
@@ -26,6 +27,8 @@ export interface SnapshotManifest {
     dayRange: number;
     file: string;
     rowCount: number;
+    sourceUrl?: string;
+    retrievedAtUtc?: string;
   }[];
 }
 
@@ -120,9 +123,11 @@ export class FirmsService {
       return undefined;
     }
     const { detections, warnings } = normalizeFirmsRecords(parseCsv(text), this.manifest.product, 'HISTORICAL');
+    const retrievedAtUtc = snap.retrievedAtUtc ?? this.manifest.retrievedAtUtc ?? 'unknown';
+    const sourceUrl = snap.sourceUrl ?? this.manifest.sourceUrl;
     const extra = [
       reason,
-      `Bundled NASA FIRMS snapshot: acquisition date ${snap.acquisitionDate} (UTC), retrieved ${this.manifest.retrievedAtUtc} from ${this.manifest.sourceUrl}.`,
+      `Bundled NASA FIRMS snapshot: acquisition date ${snap.acquisitionDate} (UTC), retrieved ${retrievedAtUtc} from ${sourceUrl ?? 'unknown source'}.`,
     ];
     if (!q.date) extra.push(`Latest data was requested; this is a HISTORICAL snapshot, not live data.`);
     return buildEnvelope({
@@ -131,10 +136,10 @@ export class FirmsService {
       area: snap.area,
       dayRange: snap.dayRange,
       requestedDate: snap.acquisitionDate,
-      fetchedAtUtc: this.manifest.retrievedAtUtc,
+      fetchedAtUtc: retrievedAtUtc,
       state: 'HISTORICAL',
       warnings: [...extra, ...warnings],
-      sourceUrl: this.manifest.sourceUrl,
+      sourceUrl,
     });
   }
 
