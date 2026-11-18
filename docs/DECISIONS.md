@@ -34,4 +34,10 @@
 | 30 | New missions carry `balanceStatus: 'provisional'`, shown on the briefing and campaign screen | Their objectives are placeholders until Stage E; the player is told rather than misled | Yes, set to `balanced` per mission in Stage E |
 | 31 | Chapter II missions practise CML 3 and Chapter III CML 4; CML 5+ is not used | CML 5 and above are about partners, contracts and schedule, which the game does not model | Yes |
 | 32 | The mission archive screen became the campaign screen | One place lists missions; the spec's separate archive adds nothing yet | Yes |
+| 33 | Objectives are composable conditions with pure evaluators (`engine/objectives.ts`); M01–M03 keep their single conditions unchanged | Required by the new missions; Chapter I behaviour and balance stay identical (balance output diffed) | Yes |
+| 34 | A met objective with a constraint can be lost later (OBJECTIVE LOST event) | A "no safe mode" objective cannot honestly be complete until the mission ends | Yes |
+| 35 | Five commendations with fixed rules (`commendations()` in `scoring.ts`); stored in the save; never gate unlocks | Spec asks for separate, explicit, optional criteria | Yes |
+| 36 | Target policy is per mission (`targetPolicy`); M07 reserves 2 low and 1 high board slots | M07's optional goal needs every confidence category on the board; its snapshot has only 1 high group | Yes |
+| 37 | Energy generated is counted in full; clamp losses are booked as curtailed or unmet | Fixes the undercount the Update 1 audit found; the score does not use these numbers, so balance is unchanged | No |
+| 38 | Run config now carries the loadout | Needed to judge the Engineering commendation from the launched design | Yes |
 

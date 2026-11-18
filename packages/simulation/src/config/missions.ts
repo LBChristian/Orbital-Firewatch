@@ -1,5 +1,6 @@
 import type { BBox } from '../geo';
-import type { ObjectiveZone } from '../firms/targets';
+import type { BuildTargetsOptions, ObjectiveZone } from '../firms/targets';
+import type { ConfidenceCategory } from '../firms/types';
 import type { Loadout } from './catalog';
 
 /**
@@ -24,10 +25,45 @@ export interface AimPoint {
   lon: number;
 }
 
-export type MissionObjective =
-  | { type: 'deliverCount'; count: number; text: string }
-  | { type: 'zones'; perZone: number; text: string }
-  | { type: 'deliverValue'; value: number; text: string };
+/**
+ * One measurable condition, evaluated only from engine state and events.
+ * Delivery conditions can only become true; constraint conditions (noSafeMode,
+ * minBattery, noDataLost) hold until something breaks them.
+ */
+export type ObjectiveCondition =
+  | { type: 'deliverCount'; count: number }
+  /** At least perZone delivered groups in each zone (or only the listed zone ids). */
+  | { type: 'zones'; perZone: number; zoneIds?: string[] }
+  | { type: 'deliverValue'; value: number }
+  /** Delivered data was captured on at least this many distinct passes over the region. */
+  | { type: 'deliverFromPasses'; passes: number }
+  /** The N highest-GAME-PRIORITY groups on the board are all delivered. */
+  | { type: 'deliverTopPriority'; count: number }
+  /** At least one delivered group whose best confidence is each listed category. */
+  | { type: 'deliverConfidence'; categories: ConfidenceCategory[] }
+  | { type: 'noSafeMode' }
+  /** Battery never falls below this fraction of capacity. */
+  | { type: 'minBattery'; frac: number }
+  /** No packet overwritten and no capture rejected for a full recorder. */
+  | { type: 'noDataLost' }
+  | { type: 'all'; conditions: ObjectiveCondition[] };
+
+export type MissionObjective = ObjectiveCondition & { text: string };
+
+export interface SecondaryObjective {
+  id: string;
+  text: string;
+  condition: ObjectiveCondition;
+}
+
+/** How FIRMS groups become mission targets. */
+export interface TargetPolicy {
+  /** 'exclude-low-only' drops groups whose best confidence is low (Chapter I behaviour). */
+  lowConfidence: 'exclude-low-only' | 'include';
+  confidenceQuota?: Partial<Record<ConfidenceCategory, number>>;
+}
+
+export const DEFAULT_TARGET_POLICY: TargetPolicy = { lowConfidence: 'exclude-low-only' };
 
 export interface ScoreWeights {
   observation: number;
@@ -64,7 +100,12 @@ export interface MissionDef {
   zones?: ObjectiveZone[];
   clusterRadiusKm: number;
   maxTargets: number;
+  /** Primary objective: required for completion. */
   objective: MissionObjective;
+  /** Optional goals; meeting all of them earns the Science commendation. Never required. */
+  secondary?: SecondaryObjective[];
+  /** Defaults to DEFAULT_TARGET_POLICY. */
+  targetPolicy?: TargetPolicy;
   /** Number of top-priority targets used as the observation-score reference. */
   referenceCount: number;
   budgetCredits: number;
@@ -240,7 +281,12 @@ export const MISSIONS: MissionDef[] = [
     imagery: { layerId: 'VIIRS_NOAA20_CorrectedReflectance_TrueColor', label: 'VIIRS NOAA-20 Corrected Reflectance (True Color)', date: '2026-11-14' },
     clusterRadiusKm: 12,
     maxTargets: 14,
-    objective: { type: 'deliverCount', count: 5, text: 'Deliver data for at least 5 target groups to the ground.' },
+    objective: {
+      type: 'all',
+      conditions: [{ type: 'deliverCount', count: 5 }, { type: 'noSafeMode' }],
+      text: 'Deliver data for at least 5 target groups without entering safe mode.',
+    },
+    secondary: [{ id: 'reserve', text: 'Keep the battery at or above 25% for the whole mission.', condition: { type: 'minBattery', frac: 0.25 } }],
     referenceCount: 8,
     budgetCredits: 130,
     durationHours: 2.5,
@@ -280,6 +326,7 @@ export const MISSIONS: MissionDef[] = [
     clusterRadiusKm: 12,
     maxTargets: 14,
     objective: { type: 'deliverValue', value: 450, text: 'Deliver at least 450 observation value (GAME PRIORITY x detail) to the ground.' },
+    secondary: [{ id: 'top3', text: 'Deliver the 3 highest-GAME-PRIORITY target groups.', condition: { type: 'deliverTopPriority', count: 3 } }],
     referenceCount: 8,
     budgetCredits: 125,
     durationHours: 2,
@@ -320,6 +367,7 @@ export const MISSIONS: MissionDef[] = [
     clusterRadiusKm: 12,
     maxTargets: 14,
     objective: { type: 'zones', perZone: 1, text: 'Deliver data for at least 1 target group in EACH latitude band.' },
+    secondary: [{ id: 'north2', text: 'Deliver at least 2 target groups from the NORTH BAND.', condition: { type: 'zones', perZone: 2, zoneIds: ['north'] } }],
     referenceCount: 8,
     budgetCredits: 130,
     durationHours: 2,
@@ -361,6 +409,14 @@ export const MISSIONS: MissionDef[] = [
     clusterRadiusKm: 12,
     maxTargets: 16,
     objective: { type: 'deliverValue', value: 500, text: 'Deliver at least 500 observation value (GAME PRIORITY x detail) to the ground.' },
+    secondary: [
+      {
+        id: 'each-confidence',
+        text: 'Deliver at least one target group of each confidence category: low, nominal and high.',
+        condition: { type: 'deliverConfidence', categories: ['low', 'nominal', 'high'] },
+      },
+    ],
+    targetPolicy: { lowConfidence: 'include', confidenceQuota: { low: 2, high: 1 } },
     referenceCount: 10,
     budgetCredits: 115,
     durationHours: 2,
@@ -400,7 +456,12 @@ export const MISSIONS: MissionDef[] = [
     ],
     clusterRadiusKm: 12,
     maxTargets: 18,
-    objective: { type: 'zones', perZone: 2, text: 'Deliver data for at least 2 target groups in EACH zone.' },
+    objective: {
+      type: 'all',
+      conditions: [{ type: 'zones', perZone: 2 }, { type: 'deliverFromPasses', passes: 2 }],
+      text: 'Deliver data for at least 2 target groups in EACH zone, captured across at least 2 passes.',
+    },
+    secondary: [{ id: 'all-home', text: 'Lose no data: no overwrites and no captures rejected for a full recorder.', condition: { type: 'noDataLost' } }],
     referenceCount: 10,
     budgetCredits: 145,
     durationHours: 3.6,
@@ -440,6 +501,13 @@ export const MISSIONS: MissionDef[] = [
     clusterRadiusKm: 12,
     maxTargets: 14,
     objective: { type: 'deliverCount', count: 5, text: 'Deliver data for at least 5 target groups to the ground.' },
+    secondary: [
+      {
+        id: 'clean-ops',
+        text: 'Finish without safe mode and without losing data to a full recorder.',
+        condition: { type: 'all', conditions: [{ type: 'noSafeMode' }, { type: 'noDataLost' }] },
+      },
+    ],
     referenceCount: 8,
     budgetCredits: 95,
     durationHours: 2,
@@ -480,7 +548,18 @@ export const MISSIONS: MissionDef[] = [
     ],
     clusterRadiusKm: 12,
     maxTargets: 20,
-    objective: { type: 'zones', perZone: 2, text: 'Deliver data for at least 2 target groups in EACH zone.' },
+    objective: {
+      type: 'all',
+      conditions: [{ type: 'zones', perZone: 2 }, { type: 'deliverFromPasses', passes: 2 }],
+      text: 'Deliver data for at least 2 target groups in EACH zone, captured across at least 2 passes.',
+    },
+    secondary: [
+      {
+        id: 'reserve-top',
+        text: 'Keep the battery at or above 25% and deliver the 3 highest-GAME-PRIORITY groups.',
+        condition: { type: 'all', conditions: [{ type: 'minBattery', frac: 0.25 }, { type: 'deliverTopPriority', count: 3 }] },
+      },
+    ],
     referenceCount: 12,
     budgetCredits: 145,
     durationHours: 3.6,
@@ -504,6 +583,18 @@ export const MISSIONS: MissionDef[] = [
     balanceStatus: 'provisional',
   },
 ];
+
+/** Target-board options for a mission, the single place the policy is applied. */
+export function missionTargetOptions(m: MissionDef): BuildTargetsOptions {
+  const policy = m.targetPolicy ?? DEFAULT_TARGET_POLICY;
+  return {
+    clusterRadiusKm: m.clusterRadiusKm,
+    maxTargets: m.maxTargets,
+    zones: m.zones,
+    excludeLowOnly: policy.lowConfidence === 'exclude-low-only',
+    confidenceQuota: policy.confidenceQuota,
+  };
+}
 
 export function getMission(id: string): MissionDef {
   const m = MISSIONS.find((m) => m.id === id);

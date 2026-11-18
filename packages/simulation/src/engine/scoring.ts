@@ -1,4 +1,7 @@
+import type { CommendationId } from '../config/campaign';
+import { validateDesign } from '../design';
 import { formatMet, objectiveProgress, type MissionRun, type ObjectiveProgress } from './engine';
+import { secondaryProgress, type SecondaryResult } from './objectives';
 
 /**
  * Transparent mission score. Describes how well the player's notional satellite performed in
@@ -48,12 +51,34 @@ export interface ScoreReport {
   referenceValue: number;
   targets: TargetResult[];
   counts: Record<TargetOutcome, number>;
-  energy: { usedWh: number; generatedWh: number; captureWh: number; radioWh: number; remainingWh: number; capacityWh: number; minFrac: number };
+  energy: {
+    usedWh: number;
+    generatedWh: number;
+    curtailedWh: number;
+    unmetWh: number;
+    captureWh: number;
+    radioWh: number;
+    remainingWh: number;
+    capacityWh: number;
+    minFrac: number;
+  };
   downlink: { contactS: number; activeS: number; sentMB: number; capacityMB: number; timeUtilization: number; capacityUtilization: number };
   storage: { capacityMB: number; peakMB: number; remainingOnBoardMB: number };
   budget: { cost: number; budget: number; marginFrac: number };
   mass: { massKg: number; capacityKg: number; marginFrac: number };
   analyst: AnalystNote[];
+  secondary: SecondaryResult[];
+  /** Every commendation with its explicit rule; earned ones have met = true. */
+  commendations: Commendation[];
+}
+
+export interface Commendation {
+  id: CommendationId;
+  label: string;
+  /** The rule, stated in full. */
+  criterion: string;
+  met: boolean;
+  detail: string;
 }
 
 export interface AnalystNote {
@@ -209,6 +234,8 @@ export function computeScore(run: MissionRun): ScoreReport {
     energy: {
       usedWh: s.stats.energyUsedWh,
       generatedWh: s.stats.energyGeneratedWh,
+      curtailedWh: s.stats.energyCurtailedWh,
+      unmetWh: s.stats.energyUnmetWh,
       captureWh: s.stats.captureEnergyWh,
       radioWh: s.stats.radioEnergyWh,
       remainingWh: s.batteryWh,
@@ -227,9 +254,66 @@ export function computeScore(run: MissionRun): ScoreReport {
     budget: { cost: spec.cost, budget: spec.budget, marginFrac: spec.budgetMarginFrac },
     mass: { massKg: spec.massKg, capacityKg: spec.launchCapacityKg, marginFrac: spec.massMarginFrac },
     analyst: [],
+    secondary: secondaryProgress(run.config, s),
+    commendations: [],
   };
+  report.commendations = commendations(run, report);
   report.analyst = missionAnalyst(run, report);
   return report;
+}
+
+/**
+ * Commendations are optional and never gate progress. Each rule uses only run state and
+ * the launched design.
+ */
+export function commendations(run: MissionRun, r: ScoreReport): Commendation[] {
+  const { mission, loadout } = run.config;
+  const s = run.state;
+  const checks = validateDesign(loadout, mission).checks;
+  const notPass = checks.filter((c) => c.level !== 'pass');
+  const onBoard = s.packets.filter((p) => p.status === 'STORED').length;
+  const opsIssues = [
+    s.stats.safeModeAtStep !== undefined ? 'safe mode entered' : '',
+    s.stats.packetsLost > 0 ? `${s.stats.packetsLost} packet(s) overwritten` : '',
+    s.stats.capturesRejectedStorage > 0 ? 'captures rejected (recorder full)' : '',
+    s.stats.capturesFailed > 0 ? `${s.stats.capturesFailed} capture(s) failed` : '',
+    onBoard > 0 ? `${onBoard} packet(s) never delivered` : '',
+  ].filter(Boolean);
+  const sec = r.secondary;
+  const science = sec.length > 0 ? sec.every((x) => x.met) : r.counts.DELIVERED >= mission.referenceCount;
+  const list: Commendation[] = [
+    { id: 'complete', label: 'Mission Complete', criterion: 'Meet the primary objective.', met: r.success, detail: r.objective.detail },
+    {
+      id: 'engineering',
+      label: 'Engineering Commendation',
+      criterion: 'Launch a design with every validation check at PASS (no warnings).',
+      met: notPass.length === 0,
+      detail: notPass.length === 0 ? 'All design checks passed.' : `Not passed: ${notPass.map((c) => c.label).join(', ')}.`,
+    },
+    {
+      id: 'science',
+      label: 'Science Commendation',
+      criterion: sec.length > 0 ? 'Meet every secondary objective.' : `Deliver at least ${mission.referenceCount} target groups.`,
+      met: science,
+      detail: sec.length > 0 ? sec.map((x) => `${x.text} ${x.met ? 'Met' : 'Not met'} (${x.detail}).`).join(' ') : `${r.counts.DELIVERED} delivered.`,
+    },
+    {
+      id: 'operations',
+      label: 'Operations Commendation',
+      criterion: 'No safe mode, no lost or rejected data, no failed captures, and every captured packet delivered.',
+      met: opsIssues.length === 0 && s.packets.length > 0,
+      detail: opsIssues.length === 0 ? (s.packets.length > 0 ? 'Clean operations.' : 'Nothing was captured.') : opsIssues.join('; ') + '.',
+    },
+  ];
+  const all = list.every((c) => c.met);
+  list.push({
+    id: 'perfect',
+    label: 'Perfect Mission',
+    criterion: 'Earn all four commendations above in one run.',
+    met: all,
+    detail: all ? 'All four earned.' : `Missing: ${list.filter((c) => !c.met).map((c) => c.label).join(', ')}.`,
+  });
+  return list;
 }
 
 /**
@@ -315,6 +399,37 @@ export function missionAnalyst(run: MissionRun, r: ScoreReport): AnalystNote[] {
       severity: never.length >= r.targets.length / 2 ? 'critical' : 'warn',
       finding: `${never.length} of ${r.targets.length} target group(s) never came within the ${Math.round(spec.reachKm)} km reach of the ground track${zones && zones.length ? ` (${zones.join(', ')} was never reached)` : ''}. Closest miss: ${Math.min(...never.map((t) => t.minDistanceKm))} km.`,
       suggestion: 'A wider swath, precision pointing (+120 km), a different aim point or another orbit would bring them into reach.',
+    });
+  }
+
+  // Multi-pass: which passes produced delivered data
+  const failedParts = r.objective.parts.filter((p) => !p.met).map((p) => p.detail);
+  const passObjective = failedParts.find((d) => d.includes('passes delivered'));
+  if (passObjective) {
+    const perPass = geometry.passes.map((p) => ({
+      n: p.index + 1,
+      captured: s.packets.filter((x) => x.passIndex === p.index).length,
+      delivered: s.packets.filter((x) => x.passIndex === p.index && x.status === 'DELIVERED').length,
+    }));
+    notes.push({
+      id: 'passes',
+      severity: 'critical',
+      finding: `The orbit made ${geometry.passes.length} pass(es) over the region: ${perPass.map((p) => `pass ${p.n} captured ${p.captured}, delivered ${p.delivered}`).join('; ')}. The objective needs delivered data from more than one pass.`,
+      suggestion:
+        geometry.passes.length < 2
+          ? 'This orbit crosses the region only once in the mission window. Try another aim point or inclination so a later orbit also crosses it.'
+          : 'Leave recorder space and energy for the later pass, and keep targets from it in the queue.',
+    });
+  }
+
+  // Constraint objectives that broke
+  if (!r.success && failedParts.some((d) => d.startsWith('lowest battery'))) {
+    const d = failedParts.find((x) => x.startsWith('lowest battery'))!;
+    notes.push({
+      id: 'reserve',
+      severity: 'critical',
+      finding: `The objective sets a battery floor, and the run broke it: ${d}. Eclipse time with no generation and ${spec.captureWh.toFixed(1)} Wh per capture drew the battery down.`,
+      suggestion: 'Larger arrays or the extended battery raise the floor; skipping low-value targets right after eclipse also helps.',
     });
   }
 

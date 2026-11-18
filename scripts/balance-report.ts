@@ -8,6 +8,7 @@ import path from 'node:path';
 import {
   MISSIONS,
   buildTargetGroups,
+  missionTargetOptions,
   computeScore,
   createRun,
   formatMet,
@@ -21,7 +22,7 @@ import {
 function loadTargets(m: MissionDef) {
   const csv = fs.readFileSync(path.resolve('apps/web/public', m.firms.snapshotFile), 'utf8');
   const { detections } = normalizeFirmsRecords(parseCsv(csv), m.firms.product, 'HISTORICAL');
-  return buildTargetGroups(detections, { clusterRadiusKm: m.clusterRadiusKm, maxTargets: m.maxTargets, zones: m.zones, excludeLowOnly: true });
+  return buildTargetGroups(detections, missionTargetOptions(m));
 }
 
 const variants: Record<string, Partial<Loadout>> = {

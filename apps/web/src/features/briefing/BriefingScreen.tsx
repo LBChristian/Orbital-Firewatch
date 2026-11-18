@@ -81,6 +81,12 @@ export function BriefingScreen() {
           <section className="briefing-text">
             <h3>Objective</h3>
             <p className="objective-line">{m.objective.text}</p>
+            {m.secondary && m.secondary.length > 0 && (
+              <p className="small">
+                <strong>Optional: </strong>
+                {m.secondary.map((o) => o.text).join(' ')} <span className="muted">Meeting every optional goal earns the Science commendation.</span>
+              </p>
+            )}
             <p>{m.briefing}</p>
 
             <h3>Constraints</h3>

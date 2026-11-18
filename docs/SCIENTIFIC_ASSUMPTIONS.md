@@ -30,6 +30,12 @@ Everything about the player's satellite is an **educational approximation**, lab
 - Sunlight uses a cylindrical Earth-shadow model. The sun direction is fixed for the mission, from the date's solar declination (Cooper's equation) and a chosen local solar time at the aim point. Earth's orbital motion during a 2–3 h mission (~0.1°) is ignored.
 - Loads: continuous bus housekeeping + pointing, the radio while transmitting, and a lump energy cost per capture (covering cooler, slew and processing).
 - Safe mode starts below 15% and clears at 35%. In safe mode no captures or downlink are possible.
+- Energy bookkeeping (Update 1). Generated energy is the array output for every sunlit step, counted in full even when the battery is full. Used energy is every load: housekeeping, pointing, radio and captures. Whatever the clamp removes is booked as curtailed (battery full) or unmet (battery empty). The balance always closes: final = initial + generated − used − curtailed + unmet. Before Update 1, generation was undercounted while the battery was full; the battery state itself was always correct.
+
+## Passes
+
+- A pass is a contiguous stretch of steps with the sub-satellite point inside the region radius plus reach and margin. Longer missions (M08, M10: 3.6 h) contain consecutive orbits. Earth rotation, sunlight and station visibility are computed for every step, so the second pass crosses a different strip, about 24° further west at 550 km.
+- Each packet records the pass it was captured on, and the recorder keeps data between passes.
 
 ## Storage and downlink
 
@@ -59,5 +65,17 @@ Everything about the player's satellite is an **educational approximation**, lab
 | Margin | 10% | mean of min(1, mass margin / 10%), min(1, lowest battery / 30%), recorder never full (1 : 0.3) |
 
 Observation value = GAME PRIORITY × payload detail × altitude detail × edge factor. A grade above C requires the objective to be met.
+
+## Objectives and commendations
+
+- **Primary objective.** One condition, or several that must all hold. Delivery conditions only ever become true: deliver N groups, deliver a value, groups per zone, data from N distinct passes, the top N GAME PRIORITY groups, or one group per confidence category. Constraint conditions hold until something breaks them: no safe mode, a battery floor, or no data lost to the recorder. If a constraint breaks after the objective was met, the engine logs OBJECTIVE LOST and the mission does not count as complete.
+- **Secondary objectives** are optional and use the same conditions.
+- **Commendations** never gate progress:
+  - Mission Complete: primary objective met.
+  - Engineering: every design check at PASS, with no warnings.
+  - Science: every secondary objective met. Missions with none instead need at least the reference number of groups delivered.
+  - Operations: no safe mode, no lost or rejected data, no failed captures, and every packet delivered.
+  - Perfect: all four of the above.
+- **Target policy.** Chapter I keeps its original rule: groups whose best confidence is low are left off the board. M07 includes them and reserves board slots by confidence: 2 low and 1 high, the only high group in its snapshot. The rest of the board is filled by GAME PRIORITY as before.
 
 All component values (mass, cost, W, Wh, MB, Mbps, swath) are **notional game parameters** (`isNotional: true`).

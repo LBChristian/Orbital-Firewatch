@@ -46,7 +46,7 @@ Set `FIRMS_MAP_KEY` in `.env`. The key stays on the server and is never sent to 
 |---|---|
 | `npm run dev` | API (tsx watch) + web (Vite) |
 | `npm run typecheck` | Type-check simulation, API and web |
-| `npm run test` | Vitest: simulation, campaign, data snapshots and API (117 tests) |
+| `npm run test` | Vitest: simulation, engine, campaign, data snapshots and API (134 tests) |
 | `npm run build` | Production web build + bundled API (`apps/api/dist/server.js`) |
 | `npm start` | Run the production server; serves the API and the built web app when `NODE_ENV=production` |
 | `npm run balance` | Print a mission balance report against the bundled snapshot |

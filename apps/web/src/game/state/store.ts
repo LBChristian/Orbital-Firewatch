@@ -9,6 +9,7 @@ import {
   createRun,
   getMission,
   loadSave,
+  missionTargetOptions,
   recordRun,
   type FirmsFeedEnvelope,
   type FirmsStatus,
@@ -168,12 +169,7 @@ export function mission(state: Pick<GameState, 'missionId'>): MissionDef {
 }
 
 export function buildMissionTargets(m: MissionDef, env: FirmsFeedEnvelope): TargetGroup[] {
-  return buildTargetGroups(env.detections, {
-    clusterRadiusKm: m.clusterRadiusKm,
-    maxTargets: m.maxTargets,
-    zones: m.zones,
-    excludeLowOnly: true,
-  });
+  return buildTargetGroups(env.detections, missionTargetOptions(m));
 }
 
 export const useGame = create<GameState>((set, get) => ({
@@ -224,7 +220,7 @@ export const useGame = create<GameState>((set, get) => ({
     const synthetic = s.feed.envelope?.state === 'SYNTHETIC DEMO';
     const progress = synthetic
       ? s.progress
-      : recordRun(s.progress, s.missionId, { score: report.total, grade: report.grade, success: report.success, atUtc: new Date().toISOString() });
+      : recordRun(s.progress, s.missionId, { score: report.total, grade: report.grade, success: report.success, commendations: report.commendations.filter((c) => c.met).map((c) => c.id), atUtc: new Date().toISOString() });
     if (!synthetic) saveProgress(progress);
     set({ report, progress, screen: 'debrief' });
   },

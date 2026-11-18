@@ -22,6 +22,7 @@ const TIMELINE_TYPES = new Set<GameEvent['type']>([
   'safe-mode',
   'safe-mode-exit',
   'objective-complete',
+  'objective-lost',
   'mission-end',
   'command',
 ]);
@@ -157,6 +158,25 @@ export function DebriefScreen() {
                     <strong>Redesign: </strong>
                     {n.suggestion}
                   </p>
+                </li>
+              ))}
+            </ul>
+          </section>
+
+          <section className="panel span-2">
+            <div className="panel-head">
+              <h3>Commendations</h3>
+              <span className="tiny muted">optional; never needed to progress</span>
+            </div>
+            <ul className="commendations">
+              {report.commendations.map((c) => (
+                <li key={c.id} className={c.met ? 'earned' : 'missed'}>
+                  <p>
+                    <span aria-hidden="true">{c.met ? '✓ ' : '○ '}</span>
+                    <strong>{c.label}</strong> <span className="tiny muted">{c.met ? 'earned' : 'not earned'}</span>
+                  </p>
+                  <p className="small muted">{c.criterion}</p>
+                  <p className="small">{c.detail}</p>
                 </li>
               ))}
             </ul>

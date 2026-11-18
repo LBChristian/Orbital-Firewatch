@@ -13,6 +13,7 @@ export * from './config/references';
 export * from './design';
 export * from './engine/geometry';
 export * from './engine/engine';
+export { evaluateCondition, hasConstraints, secondaryProgress, type ConditionResult, type SecondaryResult } from './engine/objectives';
 export * from './engine/scoring';
 
 import type { Loadout } from './config/catalog';
@@ -44,6 +45,7 @@ export function createRun(
   return new MissionRun(
     {
       mission,
+      loadout,
       spec,
       targets,
       geometry,

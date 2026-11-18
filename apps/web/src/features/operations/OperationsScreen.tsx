@@ -103,6 +103,10 @@ function Operations({ run }: { run: MissionRun }) {
             sfx('objective');
             notify(e.message, 'good');
             break;
+          case 'objective-lost':
+            sfx('lowBattery');
+            notify(e.message, 'critical');
+            break;
           case 'contact-start':
           case 'pass-start':
             sfx('lock');

@@ -6,6 +6,7 @@ import {
   MISSIONS,
   MissionRun,
   buildTargetGroups,
+  missionTargetOptions,
   clusterDetections,
   computeDesign,
   computeGeometry,
@@ -31,7 +32,7 @@ const ROOT = path.resolve(__dirname, '../../..');
 function targetsFor(m: MissionDef): TargetGroup[] {
   const csv = fs.readFileSync(path.join(ROOT, 'apps/web/public', m.firms.snapshotFile), 'utf8');
   const { detections } = normalizeFirmsRecords(parseCsv(csv), m.firms.product, 'HISTORICAL');
-  return buildTargetGroups(detections, { clusterRadiusKm: m.clusterRadiusKm, maxTargets: m.maxTargets, zones: m.zones, excludeLowOnly: true });
+  return buildTargetGroups(detections, missionTargetOptions(m));
 }
 
 function mustRun(m: MissionDef, loadout: Loadout, targets: TargetGroup[], opts = {}): MissionRun {

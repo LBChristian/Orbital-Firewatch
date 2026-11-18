@@ -96,6 +96,12 @@ export interface BuildTargetsOptions {
   zones?: ObjectiveZone[];
   /** Exclude low-confidence-only groups from mission targets. */
   excludeLowOnly?: boolean;
+  /**
+   * Minimum number of board slots for groups whose best confidence is in each category.
+   * The highest-priority groups of that category fill those slots; the rest of the board
+   * is filled by priority as usual. Used where an objective needs every category present.
+   */
+  confidenceQuota?: Partial<Record<ConfidenceCategory, number>>;
 }
 
 function percentileRanks(values: number[]): number[] {
@@ -188,7 +194,14 @@ export function buildTargetGroups(dets: FirmsDetection[], opts: BuildTargetsOpti
   eligible.sort(
     (a, b) => b.priority.total - a.priority.total || b.sumFrpMW - a.sumFrpMW || a.members[0].id.localeCompare(b.members[0].id),
   );
-  const top = eligible.slice(0, opts.maxTargets);
+  const reserved = new Set<TargetGroup>();
+  for (const [cat, n] of Object.entries(opts.confidenceQuota ?? {}) as [ConfidenceCategory, number][]) {
+    eligible.filter((g) => g.bestConfidence === cat).slice(0, n).forEach((g) => reserved.add(g));
+  }
+  const rest = eligible.filter((g) => !reserved.has(g)).slice(0, Math.max(0, opts.maxTargets - reserved.size));
+  const chosen = new Set([...reserved, ...rest]);
+  // Keep priority order on the board, whichever way a group was chosen.
+  const top = eligible.filter((g) => chosen.has(g)).slice(0, opts.maxTargets);
   top.forEach((g, i) => {
     g.callsign = `TG-${String(i + 1).padStart(2, '0')}`;
     g.id = `tg-${g.members[0].id}`;

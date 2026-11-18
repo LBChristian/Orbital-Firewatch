@@ -24,7 +24,9 @@
   - `design.ts`: derived spec and validation checks.
   - `engine/geometry.ts`: precomputes the per-step track, sunlight, station visibility, passes, contacts, target distances and windows.
   - `engine/engine.ts`: `MissionRun`, the deterministic fixed-step state machine with commands and an event log.
-  - `engine/scoring.ts`: score report and Mission Analyst.
+  - `engine/scoring.ts`: score report, commendations and Mission Analyst.
+  - `engine/objectives.ts`: pure evaluators for primary and secondary objective conditions.
+  - `config/campaign.ts`: chapters, unlock rules and the versioned save format.
 - **`apps/api`**: `createApp(opts)` (testable with injected fetch and clock), `FirmsService`, `firmsProvider`, `TtlCache`, zod schemas. `build.mjs` bundles everything into `dist/server.js`.
 - **`apps/web`**: `game/state/store.ts` (screen flow, feed, loadouts, run, progress, settings), `game/data/feed.ts` (API → IndexedDB → static fallback chain), `game/audio/sfx.ts`, `features/*` screens, `three/*` 3D.
 

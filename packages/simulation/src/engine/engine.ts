@@ -1,7 +1,9 @@
+import type { Loadout } from '../config/catalog';
 import type { MissionDef } from '../config/missions';
 import type { DesignSpec } from '../design';
 import type { TargetGroup } from '../firms/targets';
 import type { MissionGeometry } from './geometry';
+import { hasConstraints, objectiveProgress } from './objectives';
 
 /**
  * Deterministic mission engine. State advances in fixed simulated steps (mission.stepSeconds).
@@ -19,6 +21,8 @@ export interface Packet {
   targetId: string;
   callsign: string;
   captureStep: number;
+  /** Pass over the region during which the capture was made (-1 if outside any pass). */
+  passIndex: number;
   sizeMB: number;
   sentMB: number;
   /** Observation value = GAME PRIORITY x detail multiplier x edge factor. */
@@ -59,6 +63,7 @@ export type EventType =
   | 'eclipse-enter'
   | 'eclipse-exit'
   | 'objective-complete'
+  | 'objective-lost'
   | 'command'
   | 'mission-end';
 
@@ -90,8 +95,14 @@ export interface LoggedCommand {
 }
 
 export interface RunStats {
+  /** Energy drawn by every load (housekeeping, pointing, radio, captures), Wh. */
   energyUsedWh: number;
+  /** Array output while sunlit, counted in full even when the battery is full, Wh. */
   energyGeneratedWh: number;
+  /** Generation the full battery could not store, Wh. */
+  energyCurtailedWh: number;
+  /** Load the empty battery could not supply (should stay 0), Wh. */
+  energyUnmetWh: number;
   captureEnergyWh: number;
   radioEnergyWh: number;
   capturesStarted: number;
@@ -119,6 +130,8 @@ export interface CaptureInProgress {
 
 export interface RunConfig {
   mission: MissionDef;
+  /** The loadout the spec was computed from (for design checks in the debrief). */
+  loadout: Loadout;
   spec: DesignSpec;
   targets: TargetGroup[];
   geometry: MissionGeometry;
@@ -222,6 +235,8 @@ export class MissionRun {
       stats: {
         energyUsedWh: 0,
         energyGeneratedWh: 0,
+        energyCurtailedWh: 0,
+        energyUnmetWh: 0,
         captureEnergyWh: 0,
         radioEnergyWh: 0,
         capturesStarted: 0,
@@ -556,11 +571,13 @@ export class MissionRun {
       if (d <= g.reachKm) {
         const edge = d > g.swathHalfKm * EDGE_FRACTION;
         const value = Math.round(t.priority.total * spec.detail * (edge ? spec.edgeFactor : 1) * 10) / 10;
+        const win = g.windows.find((w) => w.targetId === t.id && w.startStep <= c.startStep && c.startStep <= w.endStep);
         const p: Packet = {
           id: `PKT-${String(s.packets.length + 1).padStart(3, '0')}`,
           targetId: t.id,
           callsign: t.callsign,
           captureStep: k,
+          passIndex: win?.passIndex ?? g.passAt[c.startStep],
           sizeMB: c.sizeMB,
           sentMB: 0,
           value,
@@ -655,10 +672,14 @@ export class MissionRun {
     const load = spec.busLoadW + spec.pointingLoadW + (s.transmitting ? spec.radioPowerW : 0);
     const hours = dt / 3600;
     s.stats.energyUsedWh += load * hours;
+    s.stats.energyGeneratedWh += gen * hours;
     if (s.transmitting) s.stats.radioEnergyWh += spec.radioPowerW * hours;
-    const before = s.batteryWh;
-    s.batteryWh = Math.min(spec.batteryWh, Math.max(0, s.batteryWh + (gen - load) * hours));
-    s.stats.energyGeneratedWh += Math.max(0, s.batteryWh - before + load * hours);
+    // The battery is clamped; whatever the clamp removes is booked, so the energy balance closes:
+    // final = initial + generated - used - curtailed + unmet.
+    const raw = s.batteryWh + (gen - load) * hours;
+    if (raw > spec.batteryWh) s.stats.energyCurtailedWh += raw - spec.batteryWh;
+    if (raw < 0) s.stats.energyUnmetWh += -raw;
+    s.batteryWh = Math.min(spec.batteryWh, Math.max(0, raw));
     s.stats.minBatteryWh = Math.min(s.stats.minBatteryWh, s.batteryWh);
 
     // 8. Safe mode and warnings.
@@ -681,6 +702,8 @@ export class MissionRun {
       s.storageWarned = true;
       this.emit('storage-warning', 'warn', `Recorder ${Math.round(sfrac * 100)}% full (${Math.round(s.storageUsedMB)} / ${spec.storageMB} MB).`);
     } else if (s.storageWarned && sfrac < 0.6) s.storageWarned = false;
+    // A met objective with constraints (safe mode, battery floor, data loss) can still be lost.
+    if (s.objectiveMet) this.checkObjective();
 
     // 9. Advance.
     s.step = k + 1;
@@ -688,11 +711,17 @@ export class MissionRun {
   }
 
   private checkObjective(): void {
-    if (this.state.objectiveMet) return;
-    const p = objectiveProgress(this.config, this.state);
-    if (p.met) {
-      this.state.objectiveMet = true;
-      this.emit('objective-complete', 'good', `OBJECTIVE COMPLETE: ${this.config.mission.objective.text}`);
+    const s = this.state;
+    const obj = this.config.mission.objective;
+    const p = objectiveProgress(this.config, s);
+    if (!s.objectiveMet && p.met) {
+      s.objectiveMet = true;
+      const tail = hasConstraints(obj) && !s.ended ? ' Hold the conditions until the mission ends.' : '';
+      this.emit('objective-complete', 'good', `OBJECTIVE COMPLETE: ${obj.text}${tail}`);
+    } else if (s.objectiveMet && !p.met) {
+      s.objectiveMet = false;
+      const broken = p.parts.filter((x) => !x.met).map((x) => x.detail).join('; ');
+      this.emit('objective-lost', 'critical', `OBJECTIVE LOST: ${broken}.`);
     }
   }
 
@@ -722,35 +751,4 @@ export class MissionRun {
   }
 }
 
-export interface ObjectiveProgress {
-  met: boolean;
-  /** 0..1 */
-  fraction: number;
-  detail: string;
-  zones?: { id: string; label: string; delivered: number; required: number }[];
-}
-
-export function objectiveProgress(config: RunConfig, state: RunState): ObjectiveProgress {
-  const obj = config.mission.objective;
-  const delivered = state.packets.filter((p) => p.status === 'DELIVERED');
-  const deliveredTargets = new Set(delivered.map((p) => p.targetId));
-  if (obj.type === 'deliverCount') {
-    const n = deliveredTargets.size;
-    return { met: n >= obj.count, fraction: Math.min(1, n / obj.count), detail: `${n} / ${obj.count} target groups delivered` };
-  }
-  if (obj.type === 'deliverValue') {
-    const v = delivered.reduce((a, p) => a + p.value, 0);
-    return { met: v >= obj.value, fraction: Math.min(1, v / obj.value), detail: `${Math.round(v)} / ${obj.value} value delivered` };
-  }
-  const zones = (config.mission.zones ?? []).map((z) => {
-    const n = config.targets.filter((t) => t.zone === z.label && deliveredTargets.has(t.id)).length;
-    return { id: z.id, label: z.label, delivered: n, required: obj.perZone };
-  });
-  const fraction = zones.length ? zones.reduce((a, z) => a + Math.min(1, z.delivered / z.required), 0) / zones.length : 0;
-  return {
-    met: zones.length > 0 && zones.every((z) => z.delivered >= z.required),
-    fraction,
-    detail: zones.map((z) => `${z.label} ${z.delivered}/${z.required}`).join(' · '),
-    zones,
-  };
-}
+export { objectiveProgress, type ObjectiveProgress } from './objectives';
