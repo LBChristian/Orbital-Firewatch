@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { CML_CITATION, CML_ITERATION_NOTE, MISSIONS, cmlLevel, formatMet, getMission, type GameEvent } from '@ofw/simulation';
+import { CAMPAIGN_MISSION_IDS, CML_CITATION, CML_ITERATION_NOTE, cmlLevel, formatMet, getMission, missionAvailability, type GameEvent } from '@ofw/simulation';
 import { Cite, CmlTrack } from '../../components/Citation';
 import { Button, Meter, SimBadge, StateBadge, TopBar, fmtNum } from '../../components/ui';
 import { sfx } from '../../game/audio/sfx';
@@ -47,8 +47,11 @@ export function DebriefScreen() {
   const progress = useGame((s) => s.progress[s.missionId]);
   const [showAll, setShowAll] = useState(false);
   const m = getMission(missionId);
-  const idx = MISSIONS.findIndex((x) => x.id === m.id);
-  const next = MISSIONS[idx + 1];
+  const allProgress = useGame((s) => s.progress);
+  const unlockAll = useGame((s) => s.settings.unlockAll);
+  // The next mission in campaign order, only if it is open now.
+  const nextId = CAMPAIGN_MISSION_IDS[CAMPAIGN_MISSION_IDS.indexOf(m.id) + 1];
+  const next = nextId && missionAvailability(allProgress, nextId, unlockAll).status !== 'locked' ? getMission(nextId) : undefined;
 
   useEffect(() => {
     if (report) sfx(report.success ? 'reward' : 'failure');
@@ -113,6 +116,7 @@ export function DebriefScreen() {
               Next mission: {next.name.toLowerCase()}
             </Button>
           )}
+          <Button onClick={() => go('campaign')}>Campaign</Button>
           <Button variant="ghost" onClick={() => go('title')}>
             Main menu
           </Button>

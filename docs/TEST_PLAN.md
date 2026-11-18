@@ -7,8 +7,8 @@ Results recorded on 2026-11-18 with Node 26.13.0 (test counts updated 2026-11-19
 | Command | Result |
 |---|---|
 | `npm run typecheck` | Pass (exit 0) |
-| `npm run test` | **99 passed / 99** (4 files) |
-| `npm run balance` | Runs; M01–M03 output identical before and after Stage B |
+| `npm run test` | **117 passed / 117** (5 files) |
+| `npm run balance` | Runs all 10 missions; M01–M03 output identical to the pre-Update-1 baseline |
 | `npm run build` | Pass. Web built by Vite; API bundled to `apps/api/dist/server.js` (38 kB) |
 | Secret scan of `apps/web/dist` | No `FIRMS_MAP_KEY` or key values; the web bundle never references the FIRMS Area API |
 
@@ -67,6 +67,14 @@ Coverage by area:
 - Mission data traits: M06 has at least 10 groups above 60° N, M07 has all three confidence classes, and M08 and M10 span more than 15° of longitude.
 - Local only (when `data-raw/` exists): the raw file hash matches, and every M04–M10 snapshot is re-extracted byte for byte.
 
+### `packages/simulation/tests/campaign.test.ts` (18 tests)
+
+- Structure: 10 missions in 3 chapters, matching the configs. Ids, codes and seeds are unique; aim points and zones lie inside each region; every station is labelled notional. M01–M03 are balanced and M04–M10 provisional.
+- Every recommended design passes hard validation and builds a run. M06 with a 53° orbit fails coverage and cannot build a run.
+- Unlocks: only M01 is open at start. Chapter I is sequential, Chapter II opens all at once, and Chapter III opens after Chapter II, then sequential. Free Operations opens after M10. The practice setting opens everything without changing progress.
+- Recording runs: a D-grade success completes the mission and unlocks the next one. A later failure keeps the completion and the best score; commendations merge.
+- Save: a new save is empty; v1 migrates; v2 round-trips and is preferred over v1. Corrupt JSON, wrong versions and bad shapes recover without throwing. Malformed entries and unknown missions are dropped and values clamped.
+
 ### `apps/api/tests/api.test.ts` (24 tests)
 
 - URL construction: W,S,E,N order and the date form; redacted URL.
@@ -91,6 +99,7 @@ Coverage by area:
 | Console errors during a clean M02 run | None after fixes (map-removal guards) |
 | CML track on briefing (M02 = CML 3), 10 cited notes in the design bay, CML feedback-loop note on a failed debrief; no console errors | Pass |
 | Stage B (2026-11-19): title screen shows snapshot dates and retrieval from the v2 manifest; Data & sources lists all 10 snapshots with per-snapshot retrieval and imagery; M01 briefing still loads 85 detections offline (API stopped) with retrieval 2026-11-17 | Pass |
+| Stage C (2026-11-19, 800×600 and 375×812): a v1 save migrates to v2 and the title shows "Continue: M02". The campaign shows Chapter I in order and Chapter II locked with "Complete M02, M03 to open Chapter II". The practice setting opens all 10. M06 briefing loads 14 targets offline with the gas-flare caveat and provisional note. M10 loads 4,661 detections into 20 groups in about 0.6 s. A corrupt save resets with a notice and a backup copy. No horizontal scroll at 375 px. The only console errors were 502s from the API proxy, because only the web server was running | Pass |
 | Production server: `/`, deep link, `/api/health`, snapshot, textures served; oversized bbox gives 400 | Pass |
 
 Defects found and fixed during testing:

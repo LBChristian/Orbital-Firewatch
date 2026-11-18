@@ -1,6 +1,7 @@
 import { Button, TopBar } from '../../components/ui';
 import { audio, sfx } from '../../game/audio/sfx';
-import { useGame, type Settings } from '../../game/state/store';
+import { useGame, saveProgress, type Settings } from '../../game/state/store';
+import { LEGACY_PROGRESS_KEY } from '@ofw/simulation';
 
 function Slider({ label, k }: { label: string; k: 'master' | 'sfx' | 'ambient' }) {
   const v = useGame((s) => s.settings[k]);
@@ -14,7 +15,7 @@ function Slider({ label, k }: { label: string; k: 'master' | 'sfx' | 'ambient' }
   );
 }
 
-function Toggle({ label, k, hint }: { label: string; k: 'muted' | 'reducedMotion' | 'mapDim' | 'coach'; hint: string }) {
+function Toggle({ label, k, hint }: { label: string; k: 'muted' | 'reducedMotion' | 'mapDim' | 'coach' | 'unlockAll'; hint: string }) {
   const v = useGame((s) => s.settings[k]);
   const setSettings = useGame((s) => s.setSettings);
   return (
@@ -30,7 +31,6 @@ function Toggle({ label, k, hint }: { label: string; k: 'muted' | 'reducedMotion
 
 export function SettingsScreen() {
   const closeInfo = useGame((s) => s.closeInfo);
-  const setSettings = useGame((s) => s.setSettings);
   return (
     <div className="screen">
       <TopBar>
@@ -74,21 +74,22 @@ export function SettingsScreen() {
         </section>
         <section className="settings-group">
           <h3>Progress</h3>
+          <Toggle label="Open all missions (practice)" k="unlockAll" hint="Lets you fly any mission now. Saved completions and scores are not changed." />
           <Button
             variant="danger"
             onClick={() => {
-              if (window.confirm('Clear your mission scores on this device?')) {
+              if (window.confirm('Clear campaign progress, scores and commendations on this device? This cannot be undone.')) {
                 try {
-                  localStorage.removeItem('ofw.progress');
+                  localStorage.removeItem(LEGACY_PROGRESS_KEY);
                 } catch {
                   /* ignore */
                 }
+                saveProgress({});
                 useGame.setState({ progress: {} });
-                setSettings({});
               }
             }}
           >
-            Clear mission scores
+            Clear campaign progress
           </Button>
         </section>
       </main>

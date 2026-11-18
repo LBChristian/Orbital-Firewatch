@@ -12,14 +12,15 @@ Brief → Design → Validate → Plan → Observe (simulated pass) → Store �
 
 | Screen | What the player does | Key outputs |
 |---|---|---|
-| Title | Start, archive, how to play, data and sources, settings | Feed status, snapshot retrieval time, disclaimer |
+| Title | Start or continue campaign, campaign, how to play, data and sources, settings | Feed status, snapshot retrieval time, disclaimer |
 | Briefing | Reads objective and constraints; chooses snapshot, live or synthetic data | Region and bbox, product, acquisition window (UTC), retrieval time, detections → target groups, data state |
 | Design bay | Picks altitude, inclination, bus, payload, arrays, battery, recorder, radio, pointing, launch | Live mass, credits, power, storage, downlink, swath, data per capture; pass/warn/fail checks; changes since last launch; 3D model updates |
 | Plan | Orders the capture queue, picks the first-pass aim point (M02), filters targets | Simulated ground track, swath and reach corridors, stations, predicted passes, contacts, reachable count, planned MB and Wh vs capacity |
 | Deploy | 3-second skippable deployment vignette | |
 | Operations | Watches the pass; Capture / Skip / Prioritize next / Begin downlink; auto-observe, auto-downlink and overwrite toggles; speed 0/1/2/4×; Next event | Moving satellite and scan line, target statuses with window countdowns, battery, recorder, link, packets, timeline tape, event log |
 | Debrief | Replay, redesign, change plan, next mission | Grade, score categories with formulas, Mission Analyst causal notes, per-target outcomes, energy, downlink, storage, budget and mass margins, causal timeline |
-| Archive, How to play, Data & sources, Settings | Info and settings | Volumes, mute, test sound, reduced motion, map dimming, coaching tips |
+| Campaign | Three chapters, ten missions; locked, available and completed status with the exact unlock requirement |
+| How to play, Data & sources, Settings | Info and settings | Volumes, mute, test sound, reduced motion, map dimming, coaching tips |
 
 ## Campaign
 

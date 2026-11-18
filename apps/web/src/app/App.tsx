@@ -10,7 +10,7 @@ import { PlanningScreen } from '../features/mission-map/PlanningScreen';
 import { DeploySequence } from '../features/deploy/DeploySequence';
 import { OperationsScreen } from '../features/operations/OperationsScreen';
 import { DebriefScreen } from '../features/debrief/DebriefScreen';
-import { ArchiveScreen } from '../features/campaign/ArchiveScreen';
+import { CampaignScreen } from '../features/campaign/CampaignScreen';
 import { HowToPlay } from '../features/campaign/HowToPlay';
 import { DataSources } from '../features/campaign/DataSources';
 import { SettingsScreen } from '../features/campaign/SettingsScreen';
@@ -89,7 +89,7 @@ export function App() {
       {screen === 'deploy' && <DeploySequence />}
       {screen === 'operations' && <OperationsScreen />}
       {screen === 'debrief' && <DebriefScreen />}
-      {screen === 'archive' && <ArchiveScreen />}
+      {screen === 'campaign' && <CampaignScreen />}
       {screen === 'howto' && <HowToPlay />}
       {screen === 'sources' && <DataSources />}
       {screen === 'settings' && <SettingsScreen />}

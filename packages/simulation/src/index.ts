@@ -8,6 +8,7 @@ export * from './firms/synthetic';
 export * from './orbit/orbit';
 export * from './config/catalog';
 export * from './config/missions';
+export * from './config/campaign';
 export * from './config/references';
 export * from './design';
 export * from './engine/geometry';

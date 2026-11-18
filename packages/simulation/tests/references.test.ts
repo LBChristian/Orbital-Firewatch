@@ -13,9 +13,9 @@ describe('Challenge 13 resource citations', () => {
     }
   });
 
-  it('defines CML 1-9 in order and the campaign climbs CML 2, 3, 4', () => {
+  it('defines CML 1-9 in order; Chapter I climbs CML 2, 3, 4, then trade space and point design', () => {
     expect(CML_LEVELS.map((l) => l.level)).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-    expect(MISSIONS.map((m) => m.cml.level)).toEqual([2, 3, 4]);
+    expect(MISSIONS.map((m) => m.cml.level)).toEqual([2, 3, 4, 3, 3, 3, 3, 4, 4, 4]);
     expect(cmlLevel(3).name).toBe('Trade Space');
     expect(() => cmlLevel(10)).toThrow();
   });

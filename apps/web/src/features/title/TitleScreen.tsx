@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { MISSIONS } from '@ofw/simulation';
+import { MISSIONS, getMission, nextMissionId } from '@ofw/simulation';
 import { Button, DISCLAIMER_SHORT, fmtUtc } from '../../components/ui';
 import { sfx } from '../../game/audio/sfx';
 import { loadManifest, type SnapshotManifest } from '../../game/data/feed';
@@ -26,7 +26,9 @@ export function TitleScreen() {
     void loadManifest().then(setManifest);
   }, []);
 
-  const next = MISSIONS.find((m) => !progress[m.id]?.completed) ?? MISSIONS[0];
+  const unlockAll = useGame((s) => s.settings.unlockAll);
+  const next = getMission(nextMissionId(progress, unlockAll));
+  const started = Object.keys(progress).length > 0;
   const start = () => {
     sfx('accept');
     selectMission(next.id);
@@ -52,10 +54,10 @@ export function TitleScreen() {
         </div>
         <nav className="title-menu" aria-label="Main menu">
           <Button variant="primary" size="big" onClick={start} sound={false}>
-            {progress[MISSIONS[0].id] ? `Start mission ${next.code}` : 'Start mission'}
+            {started ? `Continue: ${next.code} ${next.name}` : 'Start campaign'}
           </Button>
           <div className="title-secondary">
-            <Button onClick={() => openInfo('archive')}>Mission archive</Button>
+            <Button onClick={() => go('campaign')}>Campaign</Button>
             <Button onClick={() => openInfo('howto')}>How to play</Button>
             <Button onClick={() => openInfo('sources')}>Data &amp; sources</Button>
             <Button onClick={() => openInfo('settings')}>Settings</Button>

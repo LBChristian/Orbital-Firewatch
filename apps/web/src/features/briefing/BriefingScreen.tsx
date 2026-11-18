@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { CML_CITATION, MISSIONS, cmlLevel, formatBBox, getMission, orbitalPeriodS } from '@ofw/simulation';
+import { CML_CITATION, chapterOf, cmlLevel, formatBBox, getMission, orbitalPeriodS } from '@ofw/simulation';
 import { Cite, CmlTrack } from '../../components/Citation';
 import { InfoTip } from '../../components/Codex';
 import { Button, DISCLAIMER_SAFETY, StateBadge, TopBar, fmtAge, fmtUtc } from '../../components/ui';
@@ -18,7 +18,7 @@ export function BriefingScreen() {
   const server = useGame((s) => s.serverStatus);
   const notify = useGame((s) => s.notify);
   const m = getMission(missionId);
-  const idx = MISSIONS.findIndex((x) => x.id === m.id);
+  const chapter = chapterOf(m.id);
 
   const load = useCallback(
     async (mode: FeedMode, refresh = false) => {
@@ -52,18 +52,16 @@ export function BriefingScreen() {
         <header className="briefing-head">
           <div>
             <p className="mission-code mono">
-              Mission {m.code} of {MISSIONS.length} · difficulty {'▮'.repeat(m.difficulty)}
+              Mission {m.code} · Chapter {chapter.numeral} {chapter.title} · difficulty {'▮'.repeat(m.difficulty)}
               {'▯'.repeat(3 - m.difficulty)}
             </p>
             <h1>{m.name}</h1>
             <p className="lede">{m.tagline}</p>
           </div>
           <div className="briefing-actions">
-            {idx > 0 && (
-              <Button variant="ghost" onClick={() => go('title')}>
-                Main menu
-              </Button>
-            )}
+            <Button variant="ghost" onClick={() => go('campaign')}>
+              Campaign
+            </Button>
             <Button
               variant="primary"
               size="big"
@@ -96,13 +94,19 @@ export function BriefingScreen() {
               <dt>Launch mass</dt>
               <dd>Set by your launch option: 110 / 170 / 380 kg</dd>
               <dt>Passes</dt>
-              <dd>One planned pass over the region; extra passes depend on your orbit</dd>
+              <dd>{m.durationHours >= 3 ? 'Planned across consecutive orbits; the plan screen shows each pass your orbit actually makes' : 'One planned pass over the region; extra passes depend on your orbit'}</dd>
               <dt>Ground stations</dt>
               <dd>{m.groundStations.map((g) => g.name).join(', ')}</dd>
               <dt>Success</dt>
               <dd>{m.objective.text}</dd>
             </dl>
             <p className="small muted">{m.constraintsNote}</p>
+            {m.balanceStatus === 'provisional' && (
+              <p className="callout info small">
+                <strong>Objective provisional.</strong> This mission's NASA data and orbit geometry are final, but its objective and recommended design have not been
+                balance-tested yet and may change.
+              </p>
+            )}
 
             <h3>Concept maturity stage</h3>
             <CmlTrack level={m.cml.level} />
@@ -124,6 +128,12 @@ export function BriefingScreen() {
             <div className="callout">
               <strong>What the points are.</strong> Each point is a NASA FIRMS thermal-anomaly detection: a hot satellite pixel, not a fire boundary and not a danger
               rating. Some may be agricultural burns, flares or other hot surfaces; clouds can hide others. <InfoTip topic="firms" />
+              {m.dataCaveat && (
+                <>
+                  <br />
+                  <strong>This region.</strong> {m.dataCaveat}
+                </>
+              )}
               <br />
               <span className="small">{DISCLAIMER_SAFETY}</span>
             </div>

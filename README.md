@@ -46,7 +46,7 @@ Set `FIRMS_MAP_KEY` in `.env`. The key stays on the server and is never sent to 
 |---|---|
 | `npm run dev` | API (tsx watch) + web (Vite) |
 | `npm run typecheck` | Type-check simulation, API and web |
-| `npm run test` | Vitest: simulation, data snapshots and API (99 tests) |
+| `npm run test` | Vitest: simulation, campaign, data snapshots and API (117 tests) |
 | `npm run build` | Production web build + bundled API (`apps/api/dist/server.js`) |
 | `npm start` | Run the production server; serves the API and the built web app when `NODE_ENV=production` |
 | `npm run balance` | Print a mission balance report against the bundled snapshot |
@@ -90,7 +90,7 @@ docs/                 Product, architecture, science, provenance, compliance, te
 
 ## 30-second demo path
 
-1. Title → **Start mission** → M01 briefing shows 85 real FIRMS detections (HISTORICAL, 16 Nov 2026).
+1. Title → **Start campaign** → M01 briefing shows 85 real FIRMS detections (HISTORICAL, 16 Nov 2026). **Campaign** shows all ten missions in three chapters; Settings → "Open all missions (practice)" opens every mission.
 2. **Accept mission** → Design bay: switch the payload to High Detail and watch the swath shrink and the telescope grow. Press **Validate design**, then **Reset to recommended**.
 3. **Continue** → Plan: the cyan swath crosses the target field; one target is marked out of reach.
 4. **Launch** → Operations: captures fire as targets enter the swath, and packets downlink to GS SIERRA.

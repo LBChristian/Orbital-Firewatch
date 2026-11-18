@@ -27,3 +27,11 @@
 | 23 | Snapshot provenance is per snapshot (manifest schema v2), not top level | M01–M03 and M04–M10 come from different downloads | Yes |
 | 24 | Snapshot CSVs are `-text` in `.gitattributes` | Windows `core.autocrlf` would change their bytes and break the hashes | Yes |
 | 25 | M08 widened to 121–146° E; M09 moved to Tanzania/Kenya | M08 needs room for two consecutive-orbit tracks (about 24° apart); the East African candidate was far too dense | Yes |
+| 26 | Campaign: Chapter I in order (M01→M02→M03); Chapter II (M04–M07) opens after all of Chapter I, any order; Chapter III after all of Chapter II, in order (M08→M09→M10) | Matches the Update 1 design. Before this, every mission was open at any time; Chapter I is now sequential so new players meet the loop first | Yes, `CHAPTERS` in `config/campaign.ts` |
+| 27 | Unlocks depend on completion only (primary objective met); grade and score never lock anything | Update 1 rule; coaching, not gating | No |
+| 28 | Settings has "Open all missions (practice)", off by default | Lets testers, judges and teammates reach any mission without editing storage; saved progress is untouched | Yes |
+| 29 | Save format v2 under `ofw.save`; the v1 `ofw.progress` map is migrated once; an unreadable save resets to empty, keeps a copy in `ofw.save.unreadable`, and shows a notice | No accounts; local only; never crash on a bad save | Yes |
+| 30 | New missions carry `balanceStatus: 'provisional'`, shown on the briefing and campaign screen | Their objectives are placeholders until Stage E; the player is told rather than misled | Yes, set to `balanced` per mission in Stage E |
+| 31 | Chapter II missions practise CML 3 and Chapter III CML 4; CML 5+ is not used | CML 5 and above are about partners, contracts and schedule, which the game does not model | Yes |
+| 32 | The mission archive screen became the campaign screen | One place lists missions; the spec's separate archive adds nothing yet | Yes |
+

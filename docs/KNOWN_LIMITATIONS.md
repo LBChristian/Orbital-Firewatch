@@ -7,7 +7,9 @@
 - **Power:** fixed sun direction, cylindrical shadow, constant array output in sunlight, lump capture energy.
 - **Stations:** notional locations; simple elevation mask; no link budget, weather or scheduling conflicts.
 - **Detections:** axis-aligned footprint squares. Clustering is greedy and seed-dependent (deterministic). Live data in a mission region may give an unbalanced mission.
-- **Missions:** each has one main pass; 2–2.2 h of simulated time.
+- **Missions:** M01–M07 and M09 have one main pass (2–2.5 h simulated). M08 and M10 run 3.6 h, so the orbit makes consecutive passes, but the mission objectives, operations UI and debrief do not yet treat passes separately (Update 1 Stage D/F).
+- **M04–M10 are provisional:** their data, region and geometry are final, but objectives and recommended designs are placeholders until balance testing (Update 1 Stage E). The briefing and campaign screen say so. In the current balance runs, M04 is too easy, M07 too hard, and the M08/M10 second pass does not reach the other zone with the recommended design.
+- **M06 imagery:** MODIS Terra on 2026-11-16 has a diagonal swath gap across the region at mission zoom (seen in the browser). NOAA-20 was blank that far north in November.
 - **Rendering:** the game pauses when the browser stops animation frames (hidden tab or minimised window).
 - **Untested:** the WebGL-unavailable fallbacks (2D satellite and Earth SVG) are implemented but were not tested on a non-WebGL device. Playwright end-to-end tests are not included; UI flows were checked manually in a browser.
 - **Bundle size:** the JS bundle is about 1.1 MB (314 kB gzip), mostly Three.js and Leaflet.

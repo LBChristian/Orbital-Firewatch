@@ -1491,6 +1491,43 @@ select {
   justify-items: end;
   gap: 6px;
 }
+.chapter {
+  margin-top: var(--s6);
+}
+.chapter-head {
+  display: grid;
+  gap: 4px;
+  max-width: 760px;
+}
+.chapter .archive-list {
+  margin-top: var(--s3);
+}
+.archive-item.status-locked {
+  background: transparent;
+  border-style: dashed;
+}
+.archive-item.status-locked .arch-code,
+.archive-item.status-locked h3 {
+  color: var(--faint);
+}
+.mission-status {
+  padding: 1px 8px;
+  border: 1px solid var(--rail-2);
+  border-radius: 2px;
+  letter-spacing: 0.04em;
+}
+.mission-status.status-available {
+  border-color: var(--signal);
+  color: var(--signal);
+}
+.mission-status.status-completed {
+  border-color: var(--go);
+  color: var(--go);
+}
+.unlock-req {
+  max-width: 220px;
+  text-align: right;
+}
 .howto-steps {
   counter-reset: step;
   list-style: none;
@@ -1647,6 +1684,9 @@ select {
   }
   .arch-status {
     justify-items: start;
+  }
+  .unlock-req {
+    text-align: left;
   }
 }
 @media (max-width: 600px) {

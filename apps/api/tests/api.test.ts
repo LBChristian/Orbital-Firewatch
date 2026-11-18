@@ -159,7 +159,7 @@ describe('other endpoints', () => {
   it('health, missions, config, 404', async () => {
     expect((await request(app).get('/api/health')).body.ok).toBe(true);
     const m = await request(app).get('/api/missions');
-    expect(m.body.missions.length).toBe(3);
+    expect(m.body.missions.length).toBe(10);
     expect((await request(app).get('/api/missions/m02-split-front')).body.code).toBe('M02');
     expect((await request(app).get('/api/missions/nope')).status).toBe(404);
     const c = await request(app).get('/api/config');

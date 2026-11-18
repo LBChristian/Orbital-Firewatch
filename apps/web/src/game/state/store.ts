@@ -1,15 +1,21 @@
 import { create } from 'zustand';
 import {
+  LEGACY_PROGRESS_KEY,
   MISSIONS,
+  SAVE_KEY,
+  SAVE_VERSION,
   buildTargetGroups,
   computeScore,
   createRun,
   getMission,
+  loadSave,
+  recordRun,
   type FirmsFeedEnvelope,
   type FirmsStatus,
   type Loadout,
   type MissionDef,
   type MissionRun,
+  type ProgressMap,
   type ScoreReport,
   type TargetGroup,
 } from '@ofw/simulation';
@@ -22,7 +28,7 @@ export type Screen =
   | 'deploy'
   | 'operations'
   | 'debrief'
-  | 'archive'
+  | 'campaign'
   | 'howto'
   | 'sources'
   | 'settings';
@@ -45,13 +51,8 @@ export interface Settings {
   reducedMotion: boolean;
   mapDim: boolean;
   coach: boolean;
-}
-
-export interface MissionProgress {
-  bestScore: number;
-  bestGrade: string;
-  completed: boolean;
-  attempts: number;
+  /** Practice setting: open every mission without changing saved progress. */
+  unlockAll: boolean;
 }
 
 const prefersReducedMotion =
@@ -65,6 +66,7 @@ const DEFAULT_SETTINGS: Settings = {
   reducedMotion: !!prefersReducedMotion,
   mapDim: true,
   coach: true,
+  unlockAll: false,
 };
 
 function load<T>(key: string, fallback: T): T {
@@ -75,6 +77,44 @@ function load<T>(key: string, fallback: T): T {
     return fallback;
   }
 }
+function readRaw(key: string): string | null {
+  try {
+    return localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+/** Load the versioned save, migrating or recovering if needed. Never throws. */
+function loadProgress(): { progress: ProgressMap; notice?: string } {
+  const loaded = loadSave(readRaw(SAVE_KEY), readRaw(LEGACY_PROGRESS_KEY));
+  if (loaded.source === 'migrated') {
+    save(SAVE_KEY, loaded.save);
+    try {
+      localStorage.removeItem(LEGACY_PROGRESS_KEY);
+    } catch {
+      /* ignore */
+    }
+  }
+  if (loaded.source === 'recovered') {
+    try {
+      if (loaded.discarded !== undefined) localStorage.setItem(`${SAVE_KEY}.unreadable`, loaded.discarded);
+      localStorage.removeItem(LEGACY_PROGRESS_KEY);
+    } catch {
+      /* ignore */
+    }
+    save(SAVE_KEY, loaded.save);
+    return { progress: {}, notice: 'Saved progress could not be read and was reset. A copy was kept in browser storage.' };
+  }
+  return { progress: loaded.save.progress };
+}
+
+export function saveProgress(progress: ProgressMap) {
+  save(SAVE_KEY, { version: SAVE_VERSION, progress });
+}
+
+const initialProgress = loadProgress();
+
 function save(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
@@ -97,7 +137,7 @@ export interface GameState {
   queue: string[];
   run: MissionRun | null;
   report: ScoreReport | null;
-  progress: Record<string, MissionProgress>;
+  progress: ProgressMap;
   settings: Settings;
   serverStatus: FirmsStatus | null;
   codexOpen: boolean;
@@ -148,14 +188,14 @@ export const useGame = create<GameState>((set, get) => ({
   queue: [],
   run: null,
   report: null,
-  progress: load('ofw.progress', {} as Record<string, MissionProgress>),
+  progress: initialProgress.progress,
   settings: load('ofw.settings', DEFAULT_SETTINGS),
   serverStatus: null,
   codexOpen: false,
-  toast: null,
+  toast: initialProgress.notice ? { id: 1, text: initialProgress.notice, tone: 'warn' } : null,
 
   go: (screen) => set({ screen }),
-  openInfo: (screen) => set((s) => ({ returnTo: ['archive', 'howto', 'sources', 'settings'].includes(s.screen) ? s.returnTo : s.screen, screen })),
+  openInfo: (screen) => set((s) => ({ returnTo: ['howto', 'sources', 'settings'].includes(s.screen) ? s.returnTo : s.screen, screen })),
   closeInfo: () => set((s) => ({ screen: s.returnTo })),
   selectMission: (id) => {
     const m = getMission(id);
@@ -180,20 +220,12 @@ export const useGame = create<GameState>((set, get) => ({
     const s = get();
     if (!s.run) return;
     const report = computeScore(s.run);
-    const prev = s.progress[s.missionId];
+    // Synthetic training data never counts toward the campaign.
     const synthetic = s.feed.envelope?.state === 'SYNTHETIC DEMO';
     const progress = synthetic
       ? s.progress
-      : {
-          ...s.progress,
-          [s.missionId]: {
-            bestScore: Math.max(prev?.bestScore ?? 0, report.total),
-            bestGrade: !prev || report.total >= prev.bestScore ? report.grade : prev.bestGrade,
-            completed: (prev?.completed ?? false) || report.success,
-            attempts: (prev?.attempts ?? 0) + 1,
-          },
-        };
-    save('ofw.progress', progress);
+      : recordRun(s.progress, s.missionId, { score: report.total, grade: report.grade, success: report.success, atUtc: new Date().toISOString() });
+    if (!synthetic) saveProgress(progress);
     set({ report, progress, screen: 'debrief' });
   },
   setSettings: (p) => {

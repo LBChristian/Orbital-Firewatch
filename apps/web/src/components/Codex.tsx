@@ -77,7 +77,7 @@ export const CODEX: { id: string; title: string; body: string }[] = [
   {
     id: 'cml',
     title: 'Concept Maturity Levels (CML)',
-    body: 'A JPL scale for how mature a mission concept is, from CML 1 (cocktail napkin) to CML 9 (ready for critical design review). The campaign walks the early steps: M01 tests initial feasibility (CML 2), M02 explores the trade space (CML 3), M03 commits to a point design with margins (CML 4). Real teams loop back from point design to trade space when a design fails, which is what the redesign button is for. Source: ' + SOURCES.cml.title + ', ' + SOURCES.cml.authors + ', ' + SOURCES.cml.year + '.',
+    body: 'A JPL scale for how mature a mission concept is, from CML 1 (cocktail napkin) to CML 9 (ready for critical design review). The campaign walks the early steps: M01 tests initial feasibility (CML 2), M02 explores the trade space (CML 3), M03 commits to a point design with margins (CML 4). Chapter II returns to the trade space under one hard constraint at a time, and Chapter III closes point designs across longer missions. Real teams loop back from point design to trade space when a design fails, which is what the redesign button is for. Source: ' + SOURCES.cml.title + ', ' + SOURCES.cml.authors + ', ' + SOURCES.cml.year + '.',
   },
   {
     id: 'cubesat101',
