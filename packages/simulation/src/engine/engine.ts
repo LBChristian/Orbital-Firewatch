@@ -251,7 +251,7 @@ export class MissionRun {
     this.emit('mission-start', 'info', `${config.mission.code} ${config.mission.name}: mission clock started.`);
   }
 
-  // ---------------------------------------------------------------- helpers
+  // helpers
 
   get geometry(): MissionGeometry {
     return this.config.geometry;
@@ -287,7 +287,7 @@ export class MissionRun {
     return this.targetById.get(targetId)?.callsign ?? targetId;
   }
 
-  // ---------------------------------------------------------------- commands
+  // commands
 
   /** Apply a player command now (at the current step boundary) and log it for replay. */
   command(cmd: Command): { ok: boolean; message: string } {
@@ -435,7 +435,7 @@ export class MissionRun {
     return { ok: true, message: 'Capture started.' };
   }
 
-  // ---------------------------------------------------------------- stepping
+  // stepping
 
   /** Advance up to n steps. Returns number of steps processed. */
   advance(n: number): number {

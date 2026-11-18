@@ -96,7 +96,7 @@ export function MissionMap(props: Props) {
   const onDetRef = useRef(onDetection);
   onDetRef.current = onDetection;
 
-  // ---- create map once
+  // create map once
   useEffect(() => {
     if (!el.current) return;
     const map = L.map(el.current, {
@@ -164,7 +164,7 @@ export function MissionMap(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mission.id, compact]);
 
-  // ---- imagery with fallback chain: true colour (date) -> Blue Marble -> neutral
+  // imagery with fallback chain: true colour (date) -> Blue Marble -> neutral
   useEffect(() => {
     setImagery(missionImagery);
     setImageryNote('');
@@ -200,7 +200,7 @@ export function MissionMap(props: Props) {
     };
   }, [imagery]);
 
-  // ---- detections (NASA source layer)
+  // detections (NASA source layer)
   const highlight = useMemo(() => {
     const t = targets.find((x) => x.id === selectedId);
     return new Set(t?.members.map((m) => m.id) ?? []);
@@ -209,7 +209,7 @@ export function MissionMap(props: Props) {
     layers.current?.pixels.setPoints(detections, highlight);
   }, [detections, highlight]);
 
-  // ---- target group markers (game-generated)
+  // target group markers (game-generated)
   useEffect(() => {
     const L_ = layers.current;
     if (!L_) return;
@@ -235,7 +235,7 @@ export function MissionMap(props: Props) {
     }
   }, [targets, targetVisual, selectedId, reducedMotion]);
 
-  // ---- simulated track, swath, reach and stations
+  // simulated track, swath, reach and stations
   useEffect(() => {
     const L_ = layers.current;
     const map = mapRef.current;
@@ -290,7 +290,7 @@ export function MissionMap(props: Props) {
     }
   }, [geometry, swathHalfKm, reachKm, mission, altitudeKm, fitTo]);
 
-  // ---- imperative handle for operations
+  // imperative handle for operations
   useEffect(() => {
     if (!handleRef) return;
     handleRef.current = {

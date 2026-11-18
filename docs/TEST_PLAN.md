@@ -62,7 +62,7 @@ Coverage by area:
 - No key: snapshot served as HISTORICAL; 503 outside mission areas; status does not leak secrets.
 - Health, missions, config and 404 endpoints.
 
-## Manual browser checks (Claude in-app browser, Vite dev server)
+## Manual browser checks (browser, Vite dev server)
 
 | Check | Result |
 |---|---|

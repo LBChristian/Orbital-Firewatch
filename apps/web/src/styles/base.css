@@ -121,7 +121,7 @@ button {
   white-space: nowrap;
 }
 
-/* ---------- Buttons ---------- */
+/* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -201,7 +201,7 @@ button {
   color: var(--signal);
 }
 
-/* ---------- Provenance badges ---------- */
+/* Provenance badges */
 .state-badge {
   display: inline-flex;
   align-items: center;
@@ -264,7 +264,7 @@ button {
   white-space: nowrap;
 }
 
-/* ---------- Panels, meters ---------- */
+/* Panels, meters */
 .panel {
   background: var(--deck);
   border: 1px solid var(--rail);
@@ -337,7 +337,7 @@ button {
   background: repeating-linear-gradient(90deg, rgba(230, 236, 242, 0.25) 0 2px, transparent 2px 5px);
 }
 
-/* ---------- Layout shell ---------- */
+/* Layout shell */
 .screen {
   min-height: 100%;
   display: flex;
@@ -415,7 +415,7 @@ button {
   margin: 0;
 }
 
-/* ---------- Toast ---------- */
+/* Toast */
 .toast {
   position: fixed;
   left: 50%;
@@ -446,7 +446,7 @@ button {
   }
 }
 
-/* ---------- Codex drawer ---------- */
+/* Codex drawer */
 .codex-backdrop {
   position: fixed;
   inset: 0;

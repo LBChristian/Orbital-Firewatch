@@ -17,7 +17,7 @@
 | 13 | IBM Plex fonts via @fontsource (OFL), self-hosted | No external font requests; works offline | Yes |
 | 14 | Procedural satellite and procedural Web Audio | Assets always exist; no licensing risk | Yes |
 | 15 | Capture energy is a lump cost per capture | Makes power a real constraint at mission timescales | Yes |
-| 16 | No commits were made by Claude | Commits are left to the team | n/a |
+| 16 | Commits are made by the team | Keeps history reviewable | n/a |
 | 17 | Use CubeSat 101 and Concept Maturity Levels (both on the CH13 list) | Team chose this option; FIRMS and GIBS are not on the list | Yes |
 | 18 | Citations live in config with printed page numbers, paraphrased, never long quotes | Keeps claims checkable and within copyright limits | Yes |
 | 19 | The notional bus is described as a small satellite (<300 kg), not a CubeSat | CubeSat 101 defines both; the game bus is 40–68 kg | Yes |

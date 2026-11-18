@@ -9,6 +9,10 @@ A browser game for the NASA Space Apps Challenge 2026 ("Space Mission Design Gam
 
 Challenge 13 listed resources used: NASA CubeSat 101 (design-bay notes with page citations) and JPL Concept Maturity Levels (campaign stages CML 2–4). FIRMS and GIBS are extra NASA data services, not on that list. See [docs/CHALLENGE_RESOURCE_COMPLIANCE.md](docs/CHALLENGE_RESOURCE_COMPLIANCE.md).
 
+## AI disclosure
+
+Built with help from AI coding tools (Claude Code). Game design, data choices and testing were reviewed by the team.
+
 ## Prerequisites
 
 - Node.js 22.12 or newer (tested with Node 26.13, npm 11.20)

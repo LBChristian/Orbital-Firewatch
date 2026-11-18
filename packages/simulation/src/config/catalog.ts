@@ -1,5 +1,5 @@
 /**
- * NOTIONAL COMPONENT CATALOG — GAME-BALANCE PARAMETERS.
+ * NOTIONAL COMPONENT CATALOG: GAME-BALANCE PARAMETERS.
  *
  * Every number below is a fictional game value chosen for gameplay trade-offs. None of them
  * is a NASA specification, a real product datasheet, a real launch price, or a measured sensor

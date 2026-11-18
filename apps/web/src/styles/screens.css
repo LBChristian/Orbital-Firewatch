@@ -1,4 +1,4 @@
-/* ---------- Shared helpers ---------- */
+/* Shared helpers */
 .row-gap {
   display: flex;
   flex-wrap: wrap;
@@ -72,7 +72,7 @@
   text-decoration: underline;
 }
 
-/* ---------- Title ---------- */
+/* Title */
 .title-screen {
   position: relative;
   min-height: 100vh;
@@ -166,7 +166,7 @@
   gap: 2px;
 }
 
-/* ---------- Briefing ---------- */
+/* Briefing */
 .briefing-head {
   display: flex;
   justify-content: space-between;
@@ -246,7 +246,7 @@
   padding-left: 18px;
 }
 
-/* ---------- Map ---------- */
+/* Map */
 .mission-map {
   position: relative;
   width: 100%;
@@ -542,7 +542,7 @@
   box-shadow: 0 0 6px var(--go);
 }
 
-/* ---------- Design bay ---------- */
+/* Design bay */
 .design-screen {
   min-height: 100vh;
 }
@@ -767,7 +767,7 @@
   }
 }
 
-/* ---------- Planning ---------- */
+/* Planning */
 .plan-screen,
 .ops-screen {
   height: 100vh;
@@ -945,7 +945,7 @@ select {
   font-size: 14px;
 }
 
-/* ---------- Target detail ---------- */
+/* Target detail */
 .target-detail {
   display: grid;
   gap: var(--s3);
@@ -1005,7 +1005,7 @@ select {
   border-radius: var(--r-sm);
 }
 
-/* ---------- Deploy ---------- */
+/* Deploy */
 .deploy-screen {
   position: relative;
   height: 100vh;
@@ -1033,7 +1033,7 @@ select {
   top: var(--s5);
 }
 
-/* ---------- Operations ---------- */
+/* Operations */
 .ops-top {
   display: flex;
   align-items: center;
@@ -1349,7 +1349,7 @@ select {
   color: #b8c3cf;
 }
 
-/* ---------- Debrief ---------- */
+/* Debrief */
 .debrief-head {
   display: flex;
   justify-content: space-between;
@@ -1460,7 +1460,7 @@ select {
   grid-template-columns: 92px 1fr;
 }
 
-/* ---------- Info screens ---------- */
+/* Info screens */
 .archive-list {
   list-style: none;
   padding: 0;
@@ -1570,7 +1570,7 @@ select {
   height: 16px;
 }
 
-/* ---------- Responsive ---------- */
+/* Responsive */
 @media (max-width: 1280px) {
   .design-grid {
     grid-template-columns: minmax(280px, 340px) minmax(0, 1fr);
@@ -1689,7 +1689,7 @@ select {
   padding: 4px 10px;
 }
 
-/* ---------- Citations and concept maturity ---------- */
+/* Citations and concept maturity */
 .cite {
   font-size: 12px;
   color: var(--signal);

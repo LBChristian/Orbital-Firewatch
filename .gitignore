@@ -30,3 +30,11 @@ Thumbs.db
 # large exports
 *.blend1
 exports/
+
+# local build notes (not part of the project)
+00_SETUP_AND_RESOURCES.md
+01_MASTER_BUILD_PROMPT.md
+START_HERE.md
+ASSET_CREDITS_TEMPLATE.md
+CLAUDE.md
+.claude/

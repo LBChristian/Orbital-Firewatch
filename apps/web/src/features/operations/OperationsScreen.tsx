@@ -119,7 +119,7 @@ function Operations({ run }: { run: MissionRun }) {
     [g, notify, run],
   );
 
-  // ---- main loop
+  // main loop
   useEffect(() => {
     let raf = 0;
     let last = performance.now();
@@ -208,7 +208,7 @@ function Operations({ run }: { run: MissionRun }) {
     force();
   }, [run, g]);
 
-  // ---- keyboard
+  // keyboard
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const tag = (e.target as HTMLElement)?.tagName;
