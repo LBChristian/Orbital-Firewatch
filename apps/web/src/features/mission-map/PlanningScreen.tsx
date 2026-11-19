@@ -6,6 +6,8 @@ import { sfx } from '../../game/audio/sfx';
 import { useGame } from '../../game/state/store';
 import { MissionMap, type TargetVisual } from './MissionMap';
 import { TargetDetail } from './TargetDetail';
+import { ControllerLine } from '../../components/Controller';
+import { voiceFor } from '../../game/content/missionVoice';
 
 type StatusFilter = 'all' | 'queued' | 'reachable' | 'unreachable';
 
@@ -19,8 +21,6 @@ export function PlanningScreen() {
   const queue = useGame((s) => s.queue);
   const setQueue = useGame((s) => s.setQueue);
   const go = useGame((s) => s.go);
-  const coach = useGame((s) => s.settings.coach);
-  const setSettings = useGame((s) => s.setSettings);
   const m = getMission(missionId);
   const spec = useMemo(() => computeDesign(loadout, m.budgetCredits), [loadout, m]);
   const geo = useMemo(() => computeGeometry(m, spec, targets, aimId), [m, spec, targets, aimId]);
@@ -118,8 +118,8 @@ export function PlanningScreen() {
       <main className="plan-grid">
         <section className="plan-list" aria-label="Target queue">
           <div className="list-head">
-            <h3>Capture queue</h3>
-            <p className="tiny muted">Auto-observe captures queued targets in this order when they are in reach. Untick a target to leave it out.</p>
+            <h3>Targets to capture</h3>
+            <p className="tiny muted">Top first. Untick to skip.</p>
             <div className="filters">
               <label>
                 <span className="sr-only">Confidence filter</span>
@@ -202,24 +202,14 @@ export function PlanningScreen() {
               inclinationDeg={spec.inclinationDeg}
             />
           )}
-          {coach && m.difficulty === 1 && (
-            <div className="coach" role="note">
-              <p>
-                <strong>Read the plan.</strong> The cyan band is your sensor swath along the simulated ground track. Targets inside it can be captured on the pass;
-                ones marked ∅ never come within reach. Green dashed circles show where each ground station can hear the satellite.
-              </p>
-              <Button size="sm" variant="ghost" onClick={() => setSettings({ coach: false })}>
-                Hide tips
-              </Button>
-            </div>
-          )}
         </section>
 
         <aside className="plan-side">
+          <ControllerLine text={voiceFor(m.id).say.plan} />
           {m.aimPoints.length > 1 && (
             <fieldset className="picker aim">
               <legend>
-                First-pass aim point <InfoTip topic="pass" />
+                Where the first pass crosses <InfoTip topic="pass" />
               </legend>
               {m.aimPoints.map((a) => (
                 <label key={a.id} className={`aim-opt ${aimId === a.id ? 'on' : ''}`}>
@@ -234,7 +224,7 @@ export function PlanningScreen() {
           )}
           <div className="panel">
             <div className="panel-head">
-              <h4>Predicted plan</h4>
+              <h4>What will happen</h4>
               <SimBadge />
             </div>
             <div className="panel-body">

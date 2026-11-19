@@ -17,6 +17,8 @@ Ten missions in three chapters, each built on one day of real NASA FIRMS detecti
 | II Operational Pressure | M04 Shadow Line, M05 Dead Air, M06 Polar Watch, M07 Signal Triage | Eclipse power, contact time, latitude reach, target triage |
 | III Mission Assurance | M08 Second Look, M09 Hard Limits, M10 Final Firewatch | Multi-pass planning, hard design limits, everything together |
 
+Each mission screen keeps the words short: Ines, your flight controller, gives one line at a time, a five-point shape shows what your satellite is good at against what the mission needs, and one main button shows the next thing to do. Specs, sources and the full report are a click away.
+
 Chapter I is played in order, then Chapter II opens all at once, then Chapter III in order. A mission counts as complete when its objective is met; your grade never locks anything. Settings → "Open all missions (practice)" opens every mission. From Chapter II, you start downlinks yourself (an assist setting can change that).
 
 Challenge 13 listed resources used: NASA CubeSat 101 (design-bay notes with page citations) and JPL Concept Maturity Levels (campaign stages CML 2–4). FIRMS and GIBS are extra NASA data services, not on that list. See [docs/CHALLENGE_RESOURCE_COMPLIANCE.md](docs/CHALLENGE_RESOURCE_COMPLIANCE.md).

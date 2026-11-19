@@ -90,16 +90,16 @@ export function SettingsScreen() {
           <h3>Display</h3>
           <Toggle label="Reduce motion" k="reducedMotion" hint="Stops pulsing, idle rotation and the deployment animation." />
           <Toggle label="Dim map imagery" k="mapDim" hint="Darkens satellite imagery so data layers stand out." />
-          <Toggle label="Show coaching tips" k="coach" hint="Short hints in early missions and when an action is waiting on you." />
+          <Toggle label="Show Ines's tips on the map" k="coach" hint="Her one-line tips during a mission. Urgent calls (send data now, battery critical) always show." />
         </section>
         <section className="settings-group">
           <h3>Assistance</h3>
           <p className="small muted">
-            Chapter I starts with both assists on. From Chapter II you start downlinks yourself (press D or Begin downlink when a station is in view). You can switch
+            Chapter I starts with both assists on. From Chapter II you send data yourself (press D or Send data when a station is in range). You can switch
             either assist during a mission; the setting below only chooses how each mission starts.
           </p>
-          <Assist label="Assisted observation" k="assistObserve" hint="Auto-observe captures queued targets as they come into reach." />
-          <Assist label="Assisted downlink" k="assistDownlink" hint="Auto-downlink sends stored packets whenever a station is in view." />
+          <Assist label="Auto-capture" k="assistObserve" hint="Captures ticked targets as they come into view." />
+          <Assist label="Auto-send" k="assistDownlink" hint="Sends saved data whenever a station is in range." />
         </section>
         <section className="settings-group">
           <h3>Progress</h3>
