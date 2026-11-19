@@ -216,3 +216,24 @@ export function loadSave(current: string | null, legacy: string | null): LoadedS
   }
   return { save: empty, source: 'new' };
 }
+
+/* Assistance */
+
+export type AssistSetting = 'mission' | 'on' | 'off';
+
+/**
+ * Default automation per chapter. Chapter I is guided (both on). From Chapter II the player
+ * starts downlinks by hand, so delivery is an operations decision; auto-observe stays on
+ * because capture timing is already shaped by the queue. Settings can override either.
+ */
+export function missionAssistDefault(missionId: string): { observe: boolean; downlink: boolean } {
+  return chapterOf(missionId).id === 'ch1' ? { observe: true, downlink: true } : { observe: true, downlink: false };
+}
+
+export function resolveAssist(missionId: string, observe: AssistSetting, downlink: AssistSetting): { observe: boolean; downlink: boolean } {
+  const d = missionAssistDefault(missionId);
+  return {
+    observe: observe === 'mission' ? d.observe : observe === 'on',
+    downlink: downlink === 'mission' ? d.downlink : downlink === 'on',
+  };
+}

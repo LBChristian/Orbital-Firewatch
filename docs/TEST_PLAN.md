@@ -7,7 +7,7 @@ Results recorded on 2026-11-18 with Node 26.13.0 (test counts updated 2026-11-19
 | Command | Result |
 |---|---|
 | `npm run typecheck` | Pass (exit 0) |
-| `npm run test` | **174 passed / 174** (7 files) |
+| `npm run test` | **176 passed / 176** (7 files) |
 | `npm run balance` | Runs all 10 missions plus the documented strategy table. M01–M03 output is identical to the pre-Update-1 baseline, and no documented strategy differs from its expected result |
 | `npm run build` | Pass. Web built by Vite; API bundled to `apps/api/dist/server.js` (38 kB) |
 | Secret scan of `apps/web/dist` | No `FIRMS_MAP_KEY` or key values; the web bundle never references the FIRMS Area API |
@@ -122,6 +122,7 @@ Coverage by area:
 | CML track on briefing (M02 = CML 3), 10 cited notes in the design bay, CML feedback-loop note on a failed debrief; no console errors | Pass |
 | Stage B (2026-11-19): title screen shows snapshot dates and retrieval from the v2 manifest; Data & sources lists all 10 snapshots with per-snapshot retrieval and imagery; M01 briefing still loads 85 detections offline (API stopped) with retrieval 2026-11-17 | Pass |
 | Stage C (2026-11-19, 800×600 and 375×812): a v1 save migrates to v2 and the title shows "Continue: M02". The campaign shows Chapter I in order and Chapter II locked with "Complete M02, M03 to open Chapter II". The practice setting opens all 10. M06 briefing loads 14 targets offline with the gas-flare caveat and provisional note. M10 loads 4,661 detections into 20 groups in about 0.6 s. A corrupt save resets with a notice and a backup copy. No horizontal scroll at 375 px. The only console errors were 502s from the API proxy, because only the web server was running | Pass |
+| Stage F (2026-11-20): M08 flown in the browser with the Queensland-first aim and the mission default of manual downlink. The planner showed per-pass reach: pass 1 had 2 reachable in Queensland, pass 2 had 4 in the Kimberley. The passes-and-contacts panel showed pass timing, contact seconds left and capacity. The downlink prompt appeared at both contacts and Begin downlink delivered everything. The debrief objective check showed both conditions met, the optional goal not met (6/12), and a per-pass table (2/2/0 and 4/4/0). The Settings assistance controls render. No horizontal overflow on the debrief at 375 px. Console errors were only 502s from the offline API proxy, plus 404s carried over in the console from the earlier misconfigured preview launch; none appear in this page load's resource list | Pass |
 | Stage E (2026-11-20): M04 briefing shows the reserve objective, the 50% optional goal and 24 target groups, with no provisional note; the design bay lists the 70° inclination. Console errors were only 502s from the offline API proxy (the game fell back to static files) and 404s left over from a misconfigured first preview launch, in which the API had taken the web port | Pass |
 | Stage D (2026-11-19): M01 flown start to debrief in the browser. Score 93 / S, as before. The debrief lists all five commendations with their rules (all earned), and the save records them. The only console errors were 502s from the API proxy, because only the web server was running | Pass |
 | Production server: `/`, deep link, `/api/health`, snapshot, textures served; oversized bbox gives 400 | Pass |

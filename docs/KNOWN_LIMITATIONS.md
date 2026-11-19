@@ -12,4 +12,4 @@
 - **M06 imagery:** MODIS Terra on 2026-11-16 has a diagonal swath gap across the region at mission zoom (seen in the browser). NOAA-20 was blank that far north in November.
 - **Rendering:** the game pauses when the browser stops animation frames (hidden tab or minimised window).
 - **Untested:** the WebGL-unavailable fallbacks (2D satellite and Earth SVG) are implemented but were not tested on a non-WebGL device. Playwright end-to-end tests are not included; UI flows were checked manually in a browser.
-- **Bundle size:** the JS bundle is about 1.1 MB (314 kB gzip), mostly Three.js and Leaflet.
+- **Bundle size:** the JS bundle is about 1.18 MB (329 kB gzip), mostly Three.js and Leaflet.

@@ -165,6 +165,65 @@ export function DebriefScreen() {
 
           <section className="panel span-2">
             <div className="panel-head">
+              <h3>Objective check</h3>
+              <span className="tiny muted">each condition, measured from this run</span>
+            </div>
+            <div className="panel-body objective-check">
+              <ul className="check-list">
+                {report.objective.parts.map((part, i) => (
+                  <li key={i} className={part.met ? 'ok' : 'no'}>
+                    <span aria-hidden="true">{part.met ? '✓' : '✗'}</span> <span className="sr-only">{part.met ? 'Met:' : 'Not met:'}</span> {part.detail}
+                    {part.kind === 'constraint' && <span className="tiny muted"> (must hold to the end)</span>}
+                  </li>
+                ))}
+              </ul>
+              {report.secondary.length > 0 && (
+                <>
+                  <h4>Optional goals</h4>
+                  <ul className="check-list">
+                    {report.secondary.map((o) => (
+                      <li key={o.id} className={o.met ? 'ok' : 'no'}>
+                        <span aria-hidden="true">{o.met ? '✓' : '○'}</span> <span className="sr-only">{o.met ? 'Met:' : 'Not met:'}</span> {o.text} <span className="tiny muted">({o.detail})</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {g.passes.length > 1 && (
+                <>
+                  <h4>By pass</h4>
+                  <table className="pass-table small">
+                    <thead>
+                      <tr>
+                        <th scope="col">Pass</th>
+                        <th scope="col">Start</th>
+                        <th scope="col">Captured</th>
+                        <th scope="col">Delivered</th>
+                        <th scope="col">Still on board</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {g.passes.map((p) => {
+                        const pk = run.state.packets.filter((x) => x.passIndex === p.index);
+                        return (
+                          <tr key={p.index}>
+                            <td className="mono">{p.index + 1}</td>
+                            <td className="mono">{formatMet(p.startStep, g.stepS)}</td>
+                            <td className="mono">{pk.length}</td>
+                            <td className="mono">{pk.filter((x) => x.status === 'DELIVERED').length}</td>
+                            <td className="mono">{pk.filter((x) => x.status === 'STORED').length}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </>
+              )}
+            </div>
+          </section>
+
+          <section className="panel span-2">
+            <div className="panel-head">
               <h3>Commendations</h3>
               <span className="tiny muted">optional; never needed to progress</span>
             </div>
@@ -220,7 +279,9 @@ export function DebriefScreen() {
                   {run.state.packets.length} ({run.state.stats.capturesStarted} started, {run.state.stats.capturesFailed} failed)
                 </dd>
                 <dt>Delivered</dt>
-                <dd className="mono">{report.counts.DELIVERED} target groups</dd>
+                <dd className="mono">
+                  {report.counts.DELIVERED} target groups; {report.counts['STORED, NOT DELIVERED']} still on board
+                </dd>
                 <dt>Lost to storage</dt>
                 <dd className="mono">
                   {report.counts['MISSED: RECORDER FULL']} rejected, {report.counts['LOST (OVERWRITTEN)']} overwritten
@@ -233,7 +294,7 @@ export function DebriefScreen() {
                 </dd>
                 <dt>Energy</dt>
                 <dd className="mono">
-                  {report.energy.usedWh.toFixed(0)} Wh used ({report.energy.captureWh.toFixed(0)} captures, {report.energy.radioWh.toFixed(0)} radio); {report.energy.remainingWh.toFixed(0)} / {report.energy.capacityWh} Wh left; lowest{' '}
+                  {report.energy.generatedWh.toFixed(0)} Wh generated ({report.energy.curtailedWh.toFixed(0)} unused, battery full); {report.energy.usedWh.toFixed(0)} Wh used ({report.energy.captureWh.toFixed(0)} captures, {report.energy.radioWh.toFixed(0)} radio); {report.energy.remainingWh.toFixed(0)} / {report.energy.capacityWh} Wh left; lowest{' '}
                   {Math.round(report.energy.minFrac * 100)}%
                 </dd>
                 <dt>Downlink</dt>

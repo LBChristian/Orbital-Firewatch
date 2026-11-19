@@ -11,11 +11,13 @@ import {
   loadSave,
   missionTargetOptions,
   recordRun,
+  resolveAssist,
   type FirmsFeedEnvelope,
   type FirmsStatus,
   type Loadout,
   type MissionDef,
   type MissionRun,
+  type AssistSetting,
   type ProgressMap,
   type ScoreReport,
   type TargetGroup,
@@ -54,6 +56,10 @@ export interface Settings {
   coach: boolean;
   /** Practice setting: open every mission without changing saved progress. */
   unlockAll: boolean;
+  /** Assisted observation: follow the mission default, or force on/off. */
+  assistObserve: AssistSetting;
+  /** Assisted downlink: follow the mission default, or force on/off. */
+  assistDownlink: AssistSetting;
 }
 
 const prefersReducedMotion =
@@ -68,6 +74,8 @@ const DEFAULT_SETTINGS: Settings = {
   mapDim: true,
   coach: true,
   unlockAll: false,
+  assistObserve: 'mission',
+  assistDownlink: 'mission',
 };
 
 function load<T>(key: string, fallback: T): T {
@@ -207,7 +215,8 @@ export const useGame = create<GameState>((set, get) => ({
     const s = get();
     const m = getMission(s.missionId);
     const loadout = s.loadouts[s.missionId];
-    const run = createRun(m, loadout, s.targets, { aimId: s.aimId, queue: s.queue, autoObserve: true, autoDownlink: true });
+    const assist = resolveAssist(m.id, s.settings.assistObserve, s.settings.assistDownlink);
+    const run = createRun(m, loadout, s.targets, { aimId: s.aimId, queue: s.queue, autoObserve: assist.observe, autoDownlink: assist.downlink });
     if ('error' in run) return run.error;
     set({ run, report: null, launchedLoadouts: { ...s.launchedLoadouts, [s.missionId]: { ...loadout } } });
     return null;

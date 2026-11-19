@@ -71,6 +71,19 @@ export function PlanningScreen() {
   const plannedMB = queuedReachable.length * spec.dataMBPerCapture;
   const plannedWh = queuedReachable.length * spec.captureWh;
   const contacts = geometry?.contacts ?? [];
+  // Per-pass outlook: reachable groups, zones touched, and whether the pass is in sunlight.
+  const passPlan = (geometry?.passes ?? []).map((p) => {
+    const ids = targets.filter((t) => geometry!.windows.some((w) => w.targetId === t.id && w.passIndex === p.index)).map((t) => t.id);
+    let lit = 0;
+    for (let i = p.startStep; i <= p.endStep; i++) lit += geometry!.sunlit[i];
+    const zones = [...new Set(targets.filter((t) => ids.includes(t.id) && t.zone).map((t) => t.zone!))];
+    return { p, n: ids.length, queued: ids.filter((id) => queue.includes(id)).length, zones, sunlit: lit / (p.endStep - p.startStep + 1) };
+  });
+  const reserveFrac = (() => {
+    const find = (c: typeof m.objective): number | undefined => (c.type === 'minBattery' ? c.frac : c.type === 'all' ? c.conditions.map((x) => find(x as typeof m.objective)).find((x) => x !== undefined) : undefined);
+    return find(m.objective);
+  })();
+  const usableWh = spec.batteryWh * (1 - (reserveFrac ?? 0.15));
   const contactCapMB = contacts.reduce((a, c) => a + ((c.endStep - c.startStep + 1) * (geometry?.stepS ?? 2) * spec.downlinkMbps) / 8, 0);
 
   const toggle = (id: string) => setQueue(queue.includes(id) ? queue.filter((q) => q !== id) : [...queue, id]);
@@ -232,6 +245,25 @@ export function PlanningScreen() {
                   <dd className="mono">
                     {geometry.passes.length} over the region ({geometry.passes.map((p) => formatMet(p.startStep, geometry.stepS)).join(', ')})
                   </dd>
+                  {passPlan.length > 1 && (
+                    <>
+                      <dt>Per pass</dt>
+                      <dd className="mono">
+                        {passPlan.map((x) => (
+                          <span key={x.p.index} className="block">
+                            {x.p.index + 1}: {x.n} reachable, {x.queued} queued{x.zones.length ? ` · ${x.zones.map((z) => z.toLowerCase()).join(', ')}` : ''}
+                            {x.sunlit < 0.5 ? ' · eclipse' : ''}
+                          </span>
+                        ))}
+                      </dd>
+                    </>
+                  )}
+                  {passPlan.length === 1 && passPlan[0].sunlit < 0.5 && (
+                    <>
+                      <dt>Light</dt>
+                      <dd className="txt-warn">The pass is in Earth's shadow: captures run on battery only.</dd>
+                    </>
+                  )}
                   <dt>Reachable</dt>
                   <dd className="mono">
                     {Object.values(reach).filter(Boolean).length} / {targets.length} target groups
@@ -243,7 +275,10 @@ export function PlanningScreen() {
                   <dt>Recorder</dt>
                   <dd className={`mono ${plannedMB > spec.storageMB ? 'txt-warn' : ''}`}>{fmtNum(spec.storageMB)} MB</dd>
                   <dt>Battery</dt>
-                  <dd className={`mono ${plannedWh > spec.batteryWh * 0.8 ? 'txt-warn' : ''}`}>{spec.batteryWh} Wh</dd>
+                  <dd className={`mono ${plannedWh > usableWh ? 'txt-warn' : ''}`}>
+                    {spec.batteryWh} Wh; {Math.round(usableWh)} Wh above the {reserveFrac !== undefined ? `${Math.round(reserveFrac * 100)}% reserve rule` : '15% safe-mode line'}
+                    {plannedWh > usableWh ? ' (planned captures exceed it before any recharge)' : ''}
+                  </dd>
                   <dt>Contacts</dt>
                   <dd className="mono">
                     {contacts.length === 0

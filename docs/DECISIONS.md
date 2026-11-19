@@ -46,4 +46,8 @@
 | 42 | Catalog gains a 70° inclination option (no cost) | Gives M06 a plausible alternative that reaches the latitude but not the band; other missions are unaffected | Yes |
 | 43 | Recommended loadouts: M08 wide swath; M09 wide swath + compact arrays; M10 wide swath + precision + large recorder | Found by the balance sweep; see docs/BALANCE_REPORT.md | Yes |
 | 44 | Documented strategies live in `config/balance.ts` and are asserted by tests | A mission, catalog or engine change cannot silently break the balance | Yes |
+| 45 | Assistance defaults: Chapter I starts with auto-observe and auto-downlink on; Chapters II–III start with auto-downlink off. Settings can set either to mission default, always on or always off | Update 1 asks that not every mission be full automation; manual downlink makes delivery an operations decision without making captures tedious | Yes |
+| 46 | Operations prompts the player when a station is in view, data is waiting and auto-downlink is off | Manual downlink should be a decision, not a trap | Yes |
+| 47 | Turning on "overwrite when full" asks for confirmation | It permanently deletes stored packets | Yes |
+| 48 | Balance tables stay auto-operated (both assists on) | They measure designs and plans; manual operation is the player's choice | Yes |
 

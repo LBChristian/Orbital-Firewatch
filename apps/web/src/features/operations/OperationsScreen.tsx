@@ -193,6 +193,34 @@ function Operations({ run }: { run: MissionRun }) {
   const passNow = g.passAt[k];
   const passesLeft = g.passes.filter((p) => p.startStep > s.step).length + (passNow >= 0 ? 1 : 0);
 
+  // Link and pass outlook, all read from precomputed geometry.
+  const contactNow = g.contacts.find((c) => c.startStep <= s.step && s.step <= c.endStep);
+  const contactNext = g.contacts.find((c) => c.startStep > s.step);
+  const pendingMB = pending.reduce((a, p) => a + (p.sizeMB - p.sentMB), 0);
+  const capMB = (steps: number) => (spec.downlinkMbps * steps * g.stepS) / 8;
+  const stationName = (id: string) => m.groundStations.find((x) => x.id === id)?.name.replace(' (notional)', '') ?? id;
+  const passCur = passNow >= 0 ? g.passes[passNow] : undefined;
+  const passNext = g.passes.find((p) => p.startStep > s.step);
+  const litFrac = (p: { startStep: number; endStep: number }) => {
+    let lit = 0;
+    for (let i = p.startStep; i <= p.endStep; i++) lit += g.sunlit[i];
+    return lit / (p.endStep - p.startStep + 1);
+  };
+  const reserveFrac = (() => {
+    const find = (c: typeof m.objective): number | undefined => (c.type === 'minBattery' ? c.frac : c.type === 'all' ? c.conditions.map((x) => find(x as typeof m.objective)).find((x) => x !== undefined) : undefined);
+    return find(m.objective);
+  })();
+  const needsDownlink = !!contactNow && pending.length > 0 && !s.transmitting && !s.autoDownlink && !s.safeMode && !s.ended;
+  const toggleOverwrite = () => {
+    if (!s.overwriteLowest) {
+      const ok = window.confirm(
+        'Turn on OVERWRITE WHEN FULL?\n\nWhen the recorder is full, a new capture will permanently delete the lowest-value stored packet that is worth less than it. Deleted packets cannot be delivered. You can turn this off again at any time.',
+      );
+      if (!ok) return;
+    }
+    cmd({ type: 'setOverwrite', on: !s.overwriteLowest });
+  };
+
   const doCapture = useCallback(() => {
     const id = selected && run.state.targetStatus[selected] !== 'CAPTURED' ? selected : firstInReach;
     if (!id) {
@@ -392,7 +420,12 @@ function Operations({ run }: { run: MissionRun }) {
             />
           )}
           {s.safeMode && <div className="map-alert crit">SAFE MODE: battery below {Math.round(15)}%. Captures and downlink locked out.</div>}
-          {!s.safeMode && stationIdx >= 0 && <div className="map-alert go">{m.groundStations[stationIdx].name} in view{s.transmitting ? `: transmitting at ${spec.downlinkMbps} Mbps` : ''}</div>}
+          {!s.safeMode && stationIdx >= 0 && !needsDownlink && <div className="map-alert go">{m.groundStations[stationIdx].name} in view{s.transmitting ? `: transmitting at ${spec.downlinkMbps} Mbps` : ''}</div>}
+          {needsDownlink && (
+            <div className="map-alert warn" role="status">
+              {m.groundStations[stationIdx].name} in view and {fmtNum(pendingMB)} MB waiting. Auto-downlink is off: press D or Begin downlink.
+            </div>
+          )}
           {coach && m.difficulty === 1 && !s.ended && (
             <div className="coach ops-coach" role="note">
               {ph === 'coast' && s.step < (g.passes[0]?.startStep ?? 0) && <p>The satellite is approaching the region. Auto-observe will capture queued targets as they enter the swath, or select one and press Capture.</p>}
@@ -428,6 +461,12 @@ function Operations({ run }: { run: MissionRun }) {
                 <span className={g.sunlit[k] ? 'txt-amber' : 'muted'}>{g.sunlit[k] ? `☀ Sunlight +${spec.solarW} W` : '● Eclipse: on battery'}</span>
                 <span className="muted"> · load {spec.busLoadW + spec.pointingLoadW + (s.transmitting ? spec.radioPowerW : 0)} W</span>
               </p>
+              {reserveFrac !== undefined && (
+                <p className={`tiny tele-line ${s.stats.minBatteryWh / spec.batteryWh < reserveFrac ? 'txt-crit' : ''}`}>
+                  Reserve rule {Math.round(reserveFrac * 100)}%: lowest so far {Math.round((s.stats.minBatteryWh / spec.batteryWh) * 100)}%
+                  {s.stats.minBatteryWh / spec.batteryWh < reserveFrac ? ' (broken)' : ''}
+                </p>
+              )}
               <Meter label={<>Recorder <InfoTip topic="storage" /></>} value={s.storageUsedMB} max={spec.storageMB} mark={spec.storageMB * 0.8} display={`${fmtNum(s.storageUsedMB)} / ${fmtNum(spec.storageMB)} MB`} tone={stoFrac >= 1 - 1e-9 ? 'crit' : stoFrac > 0.8 ? 'warn' : undefined} />
               <p className="tiny tele-line">
                 <span className={stationIdx >= 0 ? 'txt-go' : 'muted'}>{stationIdx >= 0 ? `Link up: ${m.groundStations[stationIdx].name.replace(' (notional)', '')}` : 'No ground station in view'}</span>
@@ -439,6 +478,39 @@ function Operations({ run }: { run: MissionRun }) {
             </div>
           </div>
 
+          <div className="panel link">
+            <div className="panel-head">
+              <h4>Passes and contacts</h4>
+              <span className="tiny muted">from the orbit model</span>
+            </div>
+            <div className="panel-body">
+              <dl className="kv tiny">
+                <dt>Pass</dt>
+                <dd>
+                  {passCur
+                    ? `${passNow + 1} of ${g.passes.length} now, ends in ${(passCur.endStep - s.step) * g.stepS} s`
+                    : passNext
+                      ? `${passNext.index + 1} of ${g.passes.length} at ${formatMet(passNext.startStep, g.stepS)} (in ${Math.round(((passNext.startStep - s.step) * g.stepS) / 60)} min)`
+                      : 'no more passes'}
+                  {(passCur ?? passNext) && litFrac((passCur ?? passNext)!) < 0.5 ? ' · in eclipse' : ''}
+                </dd>
+                <dt>Contact</dt>
+                <dd>
+                  {contactNow
+                    ? `${stationName(contactNow.stationId)}: ${(contactNow.endStep - s.step) * g.stepS} s left, about ${fmtNum(capMB(contactNow.endStep - s.step))} MB capacity`
+                    : contactNext
+                      ? `${stationName(contactNext.stationId)} at ${formatMet(contactNext.startStep, g.stepS)}, ${(contactNext.endStep - contactNext.startStep + 1) * g.stepS} s, about ${fmtNum(capMB(contactNext.endStep - contactNext.startStep + 1))} MB`
+                      : 'no more contacts'}
+                </dd>
+                <dt>Waiting</dt>
+                <dd className={contactNow && pendingMB > capMB(contactNow.endStep - s.step) ? 'txt-warn' : ''}>
+                  {fmtNum(pendingMB)} MB in {pending.length} packet{pending.length === 1 ? '' : 's'}
+                </dd>
+              </dl>
+              <p className="tiny faint">Capacity = radio rate x seconds left / 8. Simulation estimate.</p>
+            </div>
+          </div>
+
           <div className="panel modes">
             <div className="panel-body row-gap">
               <Button size="sm" aria-pressed={s.autoObserve} onClick={() => cmd({ type: 'setAutoObserve', on: !s.autoObserve })} kbd="A">
@@ -447,7 +519,7 @@ function Operations({ run }: { run: MissionRun }) {
               <Button size="sm" aria-pressed={s.autoDownlink} onClick={() => cmd({ type: 'setAutoDownlink', on: !s.autoDownlink })}>
                 Auto-downlink
               </Button>
-              <Button size="sm" aria-pressed={s.overwriteLowest} onClick={() => cmd({ type: 'setOverwrite', on: !s.overwriteLowest })} title="When the recorder is full, overwrite the lowest-value stored packet instead of rejecting the new capture">
+              <Button size="sm" aria-pressed={s.overwriteLowest} onClick={toggleOverwrite} title="When the recorder is full, overwrite the lowest-value stored packet instead of rejecting the new capture. Asks for confirmation.">
                 Overwrite when full
               </Button>
             </div>

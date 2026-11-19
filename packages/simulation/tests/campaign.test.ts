@@ -7,6 +7,8 @@ import {
   chapterOf,
   createRun,
   loadSave,
+  missionAssistDefault,
+  resolveAssist,
   missionAvailability,
   nextMissionId,
   recordRun,
@@ -163,5 +165,19 @@ describe('save format', () => {
     );
     expect(Object.keys(r.save.progress)).toEqual(['m01-first-pass']);
     expect(r.save.progress['m01-first-pass']).toMatchObject({ bestScore: 100, attempts: 1, commendations: ['complete'] });
+  });
+});
+
+describe('assistance defaults', () => {
+  it('Chapter I is fully assisted; later chapters start with manual downlink', () => {
+    expect(missionAssistDefault('m01-first-pass')).toEqual({ observe: true, downlink: true });
+    expect(missionAssistDefault('m03-data-bottleneck')).toEqual({ observe: true, downlink: true });
+    for (const id of CAMPAIGN_MISSION_IDS.slice(3)) expect(missionAssistDefault(id), id).toEqual({ observe: true, downlink: false });
+  });
+
+  it('settings override the mission default', () => {
+    expect(resolveAssist('m05-dead-air', 'mission', 'mission')).toEqual({ observe: true, downlink: false });
+    expect(resolveAssist('m05-dead-air', 'off', 'on')).toEqual({ observe: false, downlink: true });
+    expect(resolveAssist('m01-first-pass', 'mission', 'off')).toEqual({ observe: true, downlink: false });
   });
 });

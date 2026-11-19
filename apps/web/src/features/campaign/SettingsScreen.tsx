@@ -29,6 +29,26 @@ function Toggle({ label, k, hint }: { label: string; k: 'muted' | 'reducedMotion
   );
 }
 
+function Assist({ label, k, hint }: { label: string; k: 'assistObserve' | 'assistDownlink'; hint: string }) {
+  const v = useGame((s) => s.settings[k]);
+  const setSettings = useGame((s) => s.setSettings);
+  return (
+    <div className="assist-row">
+      <span>
+        {label}
+        <span className="tiny muted block">{hint}</span>
+      </span>
+      <span className="row-gap" role="radiogroup" aria-label={label}>
+        {(['mission', 'on', 'off'] as const).map((opt) => (
+          <Button key={opt} size="sm" role="radio" aria-checked={v === opt} aria-pressed={v === opt} onClick={() => setSettings({ [k]: opt } as Partial<Settings>)}>
+            {opt === 'mission' ? 'Mission default' : opt === 'on' ? 'Always on' : 'Always off'}
+          </Button>
+        ))}
+      </span>
+    </div>
+  );
+}
+
 export function SettingsScreen() {
   const closeInfo = useGame((s) => s.closeInfo);
   return (
@@ -70,7 +90,16 @@ export function SettingsScreen() {
           <h3>Display</h3>
           <Toggle label="Reduce motion" k="reducedMotion" hint="Stops pulsing, idle rotation and the deployment animation." />
           <Toggle label="Dim map imagery" k="mapDim" hint="Darkens satellite imagery so data layers stand out." />
-          <Toggle label="Show coaching tips" k="coach" hint="Short hints during Mission 01." />
+          <Toggle label="Show coaching tips" k="coach" hint="Short hints in early missions and when an action is waiting on you." />
+        </section>
+        <section className="settings-group">
+          <h3>Assistance</h3>
+          <p className="small muted">
+            Chapter I starts with both assists on. From Chapter II you start downlinks yourself (press D or Begin downlink when a station is in view). You can switch
+            either assist during a mission; the setting below only chooses how each mission starts.
+          </p>
+          <Assist label="Assisted observation" k="assistObserve" hint="Auto-observe captures queued targets as they come into reach." />
+          <Assist label="Assisted downlink" k="assistDownlink" hint="Auto-downlink sends stored packets whenever a station is in view." />
         </section>
         <section className="settings-group">
           <h3>Progress</h3>
