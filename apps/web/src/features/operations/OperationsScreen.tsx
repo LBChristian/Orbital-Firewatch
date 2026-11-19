@@ -99,6 +99,9 @@ function Operations({ run }: { run: MissionRun }) {
             sfx('lowBattery');
             notify(e.message, 'critical');
             break;
+          case 'downlink-start':
+            sfx('downlink');
+            break;
           case 'objective-complete':
             sfx('objective');
             notify(e.message, 'good');
@@ -151,6 +154,8 @@ function Operations({ run }: { run: MissionRun }) {
         }
       } else budget = 0;
       mapHandle.current?.setSatellite(run.state.step, passStartOf());
+      // The link beam is drawn only while the engine is actually transmitting.
+      mapHandle.current?.setLink(run.state.transmitting ? g.station[Math.min(run.state.step, g.nSteps - 1)] : -1, run.state.step);
       if (run.state.events.length > lastEvent.current) {
         const fresh = run.state.events.slice(lastEvent.current);
         lastEvent.current = run.state.events.length;
@@ -415,6 +420,7 @@ function Operations({ run }: { run: MissionRun }) {
               altitudeKm={spec.altitudeKm}
               swathHalfKm={spec.swathKm / 2}
               reachKm={spec.reachKm}
+              inclinationDeg={spec.inclinationDeg}
               handleRef={mapHandle}
               legendOpen={false}
             />

@@ -16,7 +16,9 @@ export type Sfx =
   | 'objective'
   | 'failure'
   | 'reward'
-  | 'reject';
+  | 'reject'
+  | 'warn'
+  | 'downlink';
 
 interface Levels {
   master: number;
@@ -237,6 +239,17 @@ class AudioEngine {
       case 'failure':
         this.tone(392, t, 0.4, { gain: 0.1, type: 'triangle', to: 262 });
         this.tone(311, t + 0.35, 0.6, { gain: 0.08, type: 'triangle', to: 196 });
+        break;
+      case 'warn':
+        // Validation passed with warnings: a soft, low two-tone.
+        this.tone(587, t, 0.1, { gain: 0.07, type: 'triangle' });
+        this.tone(494, t + 0.12, 0.14, { gain: 0.07, type: 'triangle' });
+        break;
+      case 'downlink':
+        // Link established: a short filtered carrier sweep, then a lock chirp.
+        this.noise(t, 0.35, { gain: 0.05, freq: 1800, q: 6 });
+        this.tone(300, t, 0.3, { gain: 0.05, type: 'sawtooth', to: 600, filter: 1400 });
+        this.tone(1200, t + 0.32, 0.06, { gain: 0.05, type: 'sine' });
         break;
       case 'reward':
         [392, 523, 659, 1047].forEach((f, i) => this.tone(f, t + i * 0.08, 0.35, { gain: 0.09, type: 'triangle' }));

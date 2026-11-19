@@ -17,6 +17,8 @@ export interface MapHandle {
   setSatellite(step: number, passStart: number): void;
   flash(targetId: string, kind: 'capture' | 'fail'): void;
   packet(stationIndex: number, step: number): void;
+  /** Link beam from the satellite to a station; drawn only while transmitting (stationIndex < 0 hides it). */
+  setLink(stationIndex: number, step: number): void;
   focusTarget(id: string): void;
 }
 
@@ -47,6 +49,8 @@ interface Props {
   altitudeKm?: number;
   swathHalfKm?: number;
   reachKm?: number;
+  /** Orbit inclination, used to draw the latitude limit of the ground track. */
+  inclinationDeg?: number;
   handleRef?: MutableRefObject<MapHandle | null>;
   showLegend?: boolean;
   legendOpen?: boolean;
@@ -67,6 +71,7 @@ export function MissionMap(props: Props) {
     altitudeKm = 550,
     swathHalfKm,
     reachKm,
+    inclinationDeg,
     handleRef,
     showLegend = !compact,
     legendOpen = true,
@@ -251,7 +256,62 @@ export function MissionMap(props: Props) {
         title: `${g.name}: notional ground station, min elevation ${g.minElevationDeg}°`,
       }).addTo(L_.stations);
     }
+    // Mission zones (objective geography from the mission config)
+    for (const z of mission.zones ?? []) {
+      const b = z.bbox;
+      L.rectangle(
+        [
+          [b.south, b.west],
+          [b.north, b.east],
+        ],
+        { pane: 'sim', color: '#f2a93b', weight: 1, dashArray: '6 4', fill: false, opacity: 0.85, interactive: false },
+      ).addTo(L_.stations);
+      L.marker([b.north, b.west], {
+        pane: 'sim',
+        interactive: false,
+        icon: L.divIcon({ className: '', html: `<div class="zone-tag">${z.label}</div>`, iconSize: [10, 10], iconAnchor: [0, 0] }),
+      }).addTo(L_.stations);
+    }
+    // Latitude limit of the ground track: the orbit never passes beyond ±min(i, 180 - i).
+    if (inclinationDeg !== undefined) {
+      const lim = inclinationDeg <= 90 ? inclinationDeg : 180 - inclinationDeg;
+      const b = mission.bbox;
+      if (lim < 85 && (Math.abs(b.north) > lim - 8 || Math.abs(b.south) > lim - 8)) {
+        for (const lat of [lim, -lim]) {
+          L.polyline(
+            [
+              [lat, -180],
+              [lat, 180],
+            ],
+            { pane: 'sim', color: '#f0524a', weight: 1, dashArray: '2 6', opacity: 0.9, interactive: false },
+          ).addTo(L_.stations);
+        }
+        L.marker([lim, (b.west + b.east) / 2], {
+          pane: 'sim',
+          interactive: false,
+          icon: L.divIcon({ className: '', html: `<div class="lat-tag">orbit limit ${lim.toFixed(1)}°</div>`, iconSize: [10, 10], iconAnchor: [0, 14] }),
+        }).addTo(L_.stations);
+      }
+    }
     if (!geometry) return;
+    // Eclipse sections of the track (simulated cylindrical shadow)
+    {
+      let run: [number, number][] = [];
+      let prevLon: number | null = null;
+      const flush = () => {
+        if (run.length > 1) L.polyline(run, { pane: 'sim', color: '#8a9bb0', weight: 4, opacity: 0.55, interactive: false }).addTo(L_.track);
+        run = [];
+      };
+      for (let k = 0; k < geometry.nSteps; k += 5) {
+        const lo = geometry.lon[k];
+        if (!geometry.sunlit[k]) {
+          if (prevLon !== null && Math.abs(lo - prevLon) > 180) flush();
+          run.push([geometry.lat[k], lo]);
+        } else flush();
+        prevLon = lo;
+      }
+      flush();
+    }
     // Full mission ground track (faint)
     for (const seg of trackSegments(geometry.lat, geometry.lon, 0, geometry.nSteps - 1, 10)) {
       L.polyline(seg, { pane: 'sim', color: '#3fd0e0', weight: 1, opacity: 0.35, dashArray: '4 6', interactive: false }).addTo(L_.track);
@@ -275,7 +335,7 @@ export function MissionMap(props: Props) {
       L.marker([geometry.lat[mid], geometry.lon[mid]], {
         pane: 'sim',
         interactive: false,
-        icon: L.divIcon({ className: '', html: `<div class="chev" style="transform:rotate(${(br * 180) / Math.PI}deg)">▲</div><div class="pass-tag">Pass ${p.index + 1}</div>`, iconSize: [14, 14], iconAnchor: [7, 7] }),
+        icon: L.divIcon({ className: '', html: `<div class="chev" style="transform:rotate(${(br * 180) / Math.PI}deg)">▲</div><div class="pass-tag">Pass ${p.index + 1}${geometry.sunlit[mid] ? '' : ' · eclipse'}</div>`, iconSize: [14, 14], iconAnchor: [7, 7] }),
       }).addTo(L_.track);
     }
     if (fitTo === 'pass' && geometry.passes.length) {
@@ -288,7 +348,7 @@ export function MissionMap(props: Props) {
       fitRef.current = () => map.fitBounds(bounds, { padding: [30, 30], animate: false });
       fitRef.current();
     }
-  }, [geometry, swathHalfKm, reachKm, mission, altitudeKm, fitTo]);
+  }, [geometry, swathHalfKm, reachKm, mission, altitudeKm, fitTo, inclinationDeg]);
 
   // imperative handle for operations
   useEffect(() => {
@@ -361,6 +421,23 @@ export function MissionMap(props: Props) {
         };
         requestAnimationFrame(anim);
       },
+      setLink(stationIndex, step) {
+        const L_ = layers.current as (typeof layers.current & { link?: L.Polyline }) | null;
+        if (!L_ || !geometry) return;
+        const g = mission.groundStations[stationIndex];
+        if (stationIndex < 0 || !g) {
+          L_.link?.remove();
+          L_.link = undefined;
+          return;
+        }
+        const k = Math.min(step, geometry.nSteps - 1);
+        const pts: [number, number][] = [
+          [geometry.lat[k], geometry.lon[k]],
+          [g.lat, g.lon],
+        ];
+        if (!L_.link) L_.link = L.polyline(pts, { pane: 'satellite', color: '#5cd69c', weight: 2, opacity: 0.85, dashArray: '1 6', interactive: false }).addTo(L_.live);
+        else L_.link.setLatLngs(pts);
+      },
       focusTarget(id) {
         const t = targets.find((x) => x.id === id);
         if (t && mapRef.current) mapRef.current.panTo([t.lat, t.lon], { animate: !reducedMotion });
@@ -376,6 +453,7 @@ export function MissionMap(props: Props) {
     const L_ = layers.current;
     if (!L_) return;
     L_.live.clearLayers();
+    (L_ as { link?: unknown }).link = undefined;
     L_.sat = undefined;
     L_.scan = undefined;
     L_.trail = undefined;
@@ -413,6 +491,9 @@ export function MissionMap(props: Props) {
                 <span>
                   <i className="lg-swath" /> Sensor swath (approximate)
                 </span>
+                <span>
+                  <i className="lg-eclipse" /> Track in Earth's shadow (simulated)
+                </span>
                 {reachKm && swathHalfKm && reachKm > swathHalfKm + 1 && (
                   <span>
                     <i className="lg-reach" /> Pointing reach
@@ -423,6 +504,11 @@ export function MissionMap(props: Props) {
             <span>
               <i className="lg-gs" /> Notional ground station and contact range
             </span>
+            {mission.zones && mission.zones.length > 0 && (
+              <span>
+                <i className="lg-zone" /> Mission zone (objective area)
+              </span>
+            )}
           </div>
         </details>
       )}

@@ -199,6 +199,7 @@ export function PlanningScreen() {
               altitudeKm={spec.altitudeKm}
               swathHalfKm={spec.swathKm / 2}
               reachKm={spec.reachKm}
+              inclinationDeg={spec.inclinationDeg}
             />
           )}
           {coach && m.difficulty === 1 && (

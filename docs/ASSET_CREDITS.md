@@ -25,3 +25,5 @@ No NASA insignia, logotype or seal is used. No third-party game assets are used.
 ## Disclaimer
 
 ORBITAL FIREWATCH is an independent educational simulation. It is not affiliated with or endorsed by NASA. It is not a wildfire alert, evacuation, dispatch, emergency-response or public-safety decision system. NASA FIRMS detections are active-fire/thermal-anomaly observations with limitations and must not be used to protect life or property.
+
+Update 1 added two procedural sounds, "warn" and "downlink". Both are synthesised in `apps/web/src/game/audio/sfx.ts`; no audio files or third-party assets were added.

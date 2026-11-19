@@ -50,4 +50,7 @@
 | 46 | Operations prompts the player when a station is in view, data is waiting and auto-downlink is off | Manual downlink should be a decision, not a trap | Yes |
 | 47 | Turning on "overwrite when full" asks for confirmation | It permanently deletes stored packets | Yes |
 | 48 | Balance tables stay auto-operated (both assists on) | They measure designs and plans; manual operation is the player's choice | Yes |
+| 49 | Engine-state visuals (eclipse, link, zones, latitude limit) are drawn on the Leaflet map, not added to the 3D model | Operations happens on the map, and Update 1 says critical state must not exist only in 3D. The 3D model already reflects every component choice and the deployment | Yes |
+| 50 | The link beam is drawn only while the engine's `transmitting` flag is set | Update 1 asks for no decorative beams | No |
+| 51 | New procedural sounds: "warn" (design valid with warnings) and "downlink" (downlink started) | Fill gaps S04 and S10 in the Update 1 audio list; still Web Audio, no files | Yes |
 

@@ -1870,3 +1870,34 @@ select {
   color: var(--muted);
   font-weight: 500;
 }
+
+/* Map: zones, orbit latitude limit, eclipse */
+.zone-tag,
+.lat-tag {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  white-space: nowrap;
+  text-shadow: 0 0 3px #000, 0 0 3px #000;
+}
+.zone-tag {
+  color: var(--amber);
+  padding: 2px 4px;
+}
+.lat-tag {
+  color: var(--alarm);
+}
+.lg-eclipse {
+  display: inline-block;
+  width: 16px;
+  height: 4px;
+  background: #8a9bb0;
+  opacity: 0.6;
+  vertical-align: middle;
+}
+.lg-zone {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border: 1px dashed var(--amber);
+  vertical-align: middle;
+}

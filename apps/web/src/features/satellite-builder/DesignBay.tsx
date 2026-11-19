@@ -267,7 +267,7 @@ export function DesignBay() {
               <Button
                 onClick={() => {
                   setShown(true);
-                  sfx(validation.ok ? 'lock' : 'reject');
+                  sfx(!validation.ok ? 'reject' : validation.checks.some((c) => c.level === 'warn') ? 'warn' : 'lock');
                 }}
               >
                 Validate design

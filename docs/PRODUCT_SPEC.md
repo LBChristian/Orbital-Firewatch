@@ -21,6 +21,7 @@ Brief → Design → Validate → Plan → Observe (simulated pass) → Store �
 | Debrief | Replay, redesign, change plan, next mission | Grade, score categories with formulas, Mission Analyst causal notes, per-target outcomes, energy, downlink, storage, budget and mass margins, causal timeline |
 | Campaign | Three chapters, ten missions; locked, available and completed status with the exact unlock requirement |
 | Planning | Aim point, capture queue, per-pass breakdown (reachable groups, zones, eclipse), contacts and downlink capacity, battery budget against the reserve rule or safe-mode line |
+| Map overlays | Mission zones (dashed amber with labels), the orbit's latitude limit when the region is near it, track sections in Earth's shadow, and a link beam only while transmitting |
 | Operations | Passes and contacts panel (current or next pass, contact time left and capacity, data waiting), downlink prompt when auto-downlink is off, reserve-rule tracker, confirmed overwrite |
 | Debrief | Objective check per condition, optional goals, per-pass captured/delivered/on board, commendations with rules, energy generated and unused |
 | How to play, Data & sources, Settings | Info and settings, including assistance (mission default / always on / always off for observation and downlink) | Volumes, mute, test sound, reduced motion, map dimming, coaching tips |
