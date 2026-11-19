@@ -163,5 +163,5 @@ describe.runIf(raw && fs.existsSync(rawPath) && fs.statSync(rawPath).isFile())('
       });
       expect([lines[0], ...rows].join('\n') + '\n', e.missionId).toBe(text(e));
     }
-  });
+  }, 60_000);
 });

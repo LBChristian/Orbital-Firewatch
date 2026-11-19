@@ -7,8 +7,8 @@ Results recorded on 2026-11-18 with Node 26.13.0 (test counts updated 2026-11-19
 | Command | Result |
 |---|---|
 | `npm run typecheck` | Pass (exit 0) |
-| `npm run test` | **134 passed / 134** (6 files) |
-| `npm run balance` | Runs all 10 missions; M01–M03 output identical to the pre-Update-1 baseline |
+| `npm run test` | **174 passed / 174** (7 files) |
+| `npm run balance` | Runs all 10 missions plus the documented strategy table. M01–M03 output is identical to the pre-Update-1 baseline, and no documented strategy differs from its expected result |
 | `npm run build` | Pass. Web built by Vite; API bundled to `apps/api/dist/server.js` (38 kB) |
 | Secret scan of `apps/web/dist` | No `FIRMS_MAP_KEY` or key values; the web bundle never references the FIRMS Area API |
 
@@ -91,6 +91,12 @@ Coverage by area:
 - Objective conditions: delivery counts, passes, confidence, top-priority, battery floor, no safe mode, no data lost, and "all". A met objective is lost when a battery floor breaks later (M01 with a high-detail payload and a 0.87 floor).
 - Commendations: five, each with its rule; Perfect requires the other four. Science uses secondary objectives where a mission has them. Engineering matches the design checks.
 
+### `packages/simulation/tests/balance.test.ts` (40 tests, Update 1 Stage E)
+
+- Every M04–M10 mission is marked balanced and has at least 2 winning and 1 losing documented strategy. The recommended loadout wins with at most a planning choice.
+- Each documented strategy (35 in all) passes hard design validation and produces its expected success or fail against the bundled snapshot.
+- For each mission, at least one documented strategy meets every optional goal.
+
 ### `apps/api/tests/api.test.ts` (24 tests)
 
 - URL construction: W,S,E,N order and the date form; redacted URL.
@@ -116,6 +122,7 @@ Coverage by area:
 | CML track on briefing (M02 = CML 3), 10 cited notes in the design bay, CML feedback-loop note on a failed debrief; no console errors | Pass |
 | Stage B (2026-11-19): title screen shows snapshot dates and retrieval from the v2 manifest; Data & sources lists all 10 snapshots with per-snapshot retrieval and imagery; M01 briefing still loads 85 detections offline (API stopped) with retrieval 2026-11-17 | Pass |
 | Stage C (2026-11-19, 800×600 and 375×812): a v1 save migrates to v2 and the title shows "Continue: M02". The campaign shows Chapter I in order and Chapter II locked with "Complete M02, M03 to open Chapter II". The practice setting opens all 10. M06 briefing loads 14 targets offline with the gas-flare caveat and provisional note. M10 loads 4,661 detections into 20 groups in about 0.6 s. A corrupt save resets with a notice and a backup copy. No horizontal scroll at 375 px. The only console errors were 502s from the API proxy, because only the web server was running | Pass |
+| Stage E (2026-11-20): M04 briefing shows the reserve objective, the 50% optional goal and 24 target groups, with no provisional note; the design bay lists the 70° inclination. No console errors with only the web server running (the API is offline and the game falls back to static files) | Pass |
 | Stage D (2026-11-19): M01 flown start to debrief in the browser. Score 93 / S, as before. The debrief lists all five commendations with their rules (all earned), and the save records them. The only console errors were 502s from the API proxy, because only the web server was running | Pass |
 | Production server: `/`, deep link, `/api/health`, snapshot, textures served; oversized bbox gives 400 | Pass |
 

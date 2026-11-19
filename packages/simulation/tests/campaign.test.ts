@@ -30,8 +30,8 @@ describe('campaign structure', () => {
     expect(chapterOf('m06-polar-watch').numeral).toBe('II');
   });
 
-  it('keeps M01-M03 balanced and marks new missions provisional until balance testing', () => {
-    expect(MISSIONS.filter((m) => m.balanceStatus === 'balanced').map((m) => m.code)).toEqual(['M01', 'M02', 'M03']);
+  it('marks every mission balanced after Update 1 balance testing', () => {
+    expect(MISSIONS.every((m) => m.balanceStatus === 'balanced')).toBe(true);
   });
 
   it('every mission has unique ids, codes and seeds, and aim points inside its region', () => {

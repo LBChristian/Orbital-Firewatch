@@ -40,4 +40,10 @@
 | 36 | Target policy is per mission (`targetPolicy`); M07 reserves 2 low and 1 high board slots | M07's optional goal needs every confidence category on the board; its snapshot has only 1 high group | Yes |
 | 37 | Energy generated is counted in full; clamp losses are booked as curtailed or unmet | Fixes the undercount the Update 1 audit found; the score does not use these numbers, so balance is unchanged | No |
 | 38 | Run config now carries the loadout | Needed to judge the Engineering commendation from the launched design | Yes |
+| 39 | Every Update 1 mission's recommended design can win, but in M04, M06, M08 and M10 only with a planning choice (trim the queue, pick the aim point); the defaults fail | Meets "recommended can complete" while keeping automation from solving missions by itself | Yes |
+| 40 | M04 uses a 35% operations reserve objective, with a pre-dawn pass at the end of eclipse | Payload busy time caps captures at about 12 per pass, which is not enough to reach the 15% safe-mode threshold; the reserve rule makes the eclipse trade-off real | Yes |
+| 41 | M07's notional station moved after the pass (GS LINGNAN), and a "Mekong valley" aim point was added | With a contact before the pass, radio timing was the bottleneck instead of triage; the aim point makes the every-confidence optional goal reachable | Yes |
+| 42 | Catalog gains a 70° inclination option (no cost) | Gives M06 a plausible alternative that reaches the latitude but not the band; other missions are unaffected | Yes |
+| 43 | Recommended loadouts: M08 wide swath; M09 wide swath + compact arrays; M10 wide swath + precision + large recorder | Found by the balance sweep; see docs/BALANCE_REPORT.md | Yes |
+| 44 | Documented strategies live in `config/balance.ts` and are asserted by tests | A mission, catalog or engine change cannot silently break the balance | Yes |
 

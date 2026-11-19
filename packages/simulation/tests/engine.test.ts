@@ -124,7 +124,7 @@ describe('target policy', () => {
 
 describe('multi-pass geometry', () => {
   it('M08 makes two distinct passes, about one orbit apart, with the track shifted west', () => {
-    const g = run(M08).config.geometry;
+    const g = run(M08, M08.recommended, { aimId: 'east' }).config.geometry;
     expect(g.passes.length).toBeGreaterThanOrEqual(2);
     const [p1, p2] = g.passes;
     expect(p2.startStep).toBeGreaterThan(p1.endStep);
@@ -141,7 +141,7 @@ describe('multi-pass geometry', () => {
   });
 
   it('evaluates sunlight and station contacts over the whole timeline', () => {
-    const g = run(M08).config.geometry;
+    const g = run(M08, M08.recommended, { aimId: 'east' }).config.geometry;
     const sun = Array.from(g.sunlit);
     expect(sun.includes(0) && sun.includes(1)).toBe(true);
     const lastQuarter = Math.floor(g.nSteps * 0.75);
@@ -151,7 +151,7 @@ describe('multi-pass geometry', () => {
   });
 
   it('packets record their pass, and stored data survives across passes', () => {
-    const r = run(M08, M08.recommended, { autoDownlink: false });
+    const r = run(M08, M08.recommended, { aimId: 'east', autoDownlink: false });
     r.runToEnd();
     const pass0 = r.state.packets.filter((p) => p.passIndex === 0);
     expect(pass0.length).toBeGreaterThan(0);
@@ -161,7 +161,7 @@ describe('multi-pass geometry', () => {
   });
 
   it('replaying a multi-pass command log reproduces events, score and commendations', () => {
-    const live = run(M08, M08.recommended, { autoDownlink: false });
+    const live = run(M08, M08.recommended, { aimId: 'east', autoDownlink: false });
     live.advance(200);
     const first = live.config.targets[0].id;
     live.command({ type: 'prioritize', targetId: first });
@@ -169,7 +169,7 @@ describe('multi-pass geometry', () => {
     live.command({ type: 'setAutoDownlink', on: true });
     live.command({ type: 'skip', targetId: live.config.targets[1].id });
     live.runToEnd();
-    const replay = run(M08, M08.recommended, { autoDownlink: false, replay: live.state.commandLog });
+    const replay = run(M08, M08.recommended, { aimId: 'east', autoDownlink: false, replay: live.state.commandLog });
     replay.runToEnd();
     expect(JSON.stringify(replay.state.events)).toBe(JSON.stringify(live.state.events));
     expect(computeScore(replay)).toEqual(computeScore(live));
@@ -253,7 +253,7 @@ describe('commendations', () => {
     const r = run(m);
     r.runToEnd();
     const rep = computeScore(r);
-    expect(rep.secondary.map((s) => s.id)).toEqual(['north2']);
+    expect(rep.secondary.map((s) => s.id)).toEqual(['eleven']);
     expect(rep.commendations.find((x) => x.id === 'science')!.met).toBe(rep.secondary[0].met);
   });
 

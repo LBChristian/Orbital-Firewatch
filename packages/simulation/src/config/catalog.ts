@@ -432,6 +432,12 @@ export const INCLINATION_OPTIONS: InclinationOption[] = [
     description: 'Covers 53°N to 53°S, with many passes near mid-latitudes.',
   },
   {
+    id: 'inc-70',
+    label: '70° high inclination',
+    inclinationDeg: 70,
+    description: 'Covers 70°N to 70°S. Reaches high latitudes, but the ground track runs more north-south and crowds near its turning latitude.',
+  },
+  {
     id: 'inc-97',
     label: '97.6° sun-synchronous-like',
     inclinationDeg: 97.6,

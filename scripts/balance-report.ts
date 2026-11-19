@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {
+  BALANCE_STRATEGIES,
   MISSIONS,
   buildTargetGroups,
   missionTargetOptions,
@@ -62,5 +63,30 @@ for (const m of MISSIONS) {
           .join(',')} | score ${String(r.total).padStart(3)} ${r.grade} ${r.success ? 'SUCCESS' : 'fail   '} | del ${r.counts.DELIVERED} stored ${r.counts['STORED, NOT DELIVERED']} full ${r.counts['MISSED: RECORDER FULL']} noReach ${r.counts['MISSED: NEVER IN REACH']} inReach ${r.counts['MISSED: IN REACH, NOT CAPTURED']} pwr ${r.counts['MISSED: LOW ENERGY']} | ${r.objective.detail} | minBat ${Math.round(r.energy.minFrac * 100)}%`,
       );
     }
+  }
+}
+
+// Documented Update 1 strategies (the same table the balance tests assert).
+console.log('\n=== Documented strategies (packages/simulation/src/config/balance.ts)');
+for (const m of MISSIONS) {
+  const rows = BALANCE_STRATEGIES[m.id];
+  if (!rows || (only && m.id !== only)) continue;
+  const targets = loadTargets(m);
+  console.log(`\n${m.code} ${m.name}: ${m.objective.text}`);
+  for (const s of rows) {
+    const loadout = { ...m.recommended, ...s.loadout };
+    const queue = targets.slice(0, s.queueTop ?? targets.length).map((t) => t.id);
+    const run = createRun(m, loadout, targets, { aimId: s.aim ?? m.aimPoints[0].id, queue });
+    if ('error' in run) {
+      console.log(`  ${s.name.padEnd(38)} ERROR ${run.error}`);
+      continue;
+    }
+    run.runToEnd();
+    const r = computeScore(run);
+    const got = r.success ? 'success' : 'fail';
+    const sec = r.secondary.every((x) => x.met) ? 'optional met' : 'optional not met';
+    console.log(
+      `  ${s.name.padEnd(38)} ${got.padEnd(7)} ${got === s.expect ? '' : `(EXPECTED ${s.expect}) `}${String(r.total).padStart(3)} ${r.grade} | ${r.objective.detail} | min battery ${Math.round(r.energy.minFrac * 100)}% | ${sec} | ${s.note}`,
+    );
   }
 }

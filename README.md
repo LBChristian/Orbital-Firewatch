@@ -46,10 +46,10 @@ Set `FIRMS_MAP_KEY` in `.env`. The key stays on the server and is never sent to 
 |---|---|
 | `npm run dev` | API (tsx watch) + web (Vite) |
 | `npm run typecheck` | Type-check simulation, API and web |
-| `npm run test` | Vitest: simulation, engine, campaign, data snapshots and API (134 tests) |
+| `npm run test` | Vitest: simulation, engine, campaign, balance, data snapshots and API (174 tests) |
 | `npm run build` | Production web build + bundled API (`apps/api/dist/server.js`) |
 | `npm start` | Run the production server; serves the API and the built web app when `NODE_ENV=production` |
-| `npm run balance` | Print a mission balance report against the bundled snapshot |
+| `npm run balance` | Print a balance report for every mission plus the documented strategies (see docs/BALANCE_REPORT.md) |
 
 ### Production
 
@@ -84,6 +84,7 @@ docs/                 Product, architecture, science, provenance, compliance, te
 - [Challenge resource compliance](docs/CHALLENGE_RESOURCE_COMPLIANCE.md)
 - [Decisions](docs/DECISIONS.md)
 - [Asset credits](docs/ASSET_CREDITS.md)
+- [Balance report](docs/BALANCE_REPORT.md)
 - [Test plan and results](docs/TEST_PLAN.md)
 - [Known limitations](docs/KNOWN_LIMITATIONS.md)
 - [Team work split](docs/TEAM_WORK_SPLIT.md)
