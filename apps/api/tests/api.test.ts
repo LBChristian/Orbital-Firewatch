@@ -154,6 +154,29 @@ describe('no MAP_KEY configured', () => {
   });
 });
 
+describe('wide mission areas (M08, M10)', () => {
+  const calls: string[] = [];
+  const app = createApp({ mapKey: KEY, snapshotDir: SNAP_DIR, fetchImpl: mockFetch(CSV, 200, calls) });
+  const M10 = 'source=VIIRS_NOAA20_NRT&west=-17&south=6&east=15&north=14&dayRange=1';
+  it('serves the exact bundled snapshot even though the box is wider than 20°, without calling FIRMS', async () => {
+    const r = await request(app).get(`/api/firms/area?${M10}&date=2026-11-13`);
+    expect(r.status).toBe(200);
+    expect(r.body.state).toBe('HISTORICAL');
+    expect(r.body.count).toBe(4661);
+    expect(r.body.warnings.join(' ')).toContain('NASA FIRMS was not queried');
+    expect(calls.length).toBe(0);
+  });
+  it('still refuses a live (undated) query wider than 20°', async () => {
+    const r = await request(app).get(`/api/firms/area?${M10}`);
+    expect(r.status).toBe(400);
+    expect(calls.length).toBe(0);
+  });
+  it('still refuses a wide dated box that is not a bundled snapshot', async () => {
+    const r = await request(app).get('/api/firms/area?source=VIIRS_NOAA20_NRT&west=-17&south=6&east=15&north=14&dayRange=1&date=2026-11-12');
+    expect(r.status).toBe(400);
+  });
+});
+
 describe('other endpoints', () => {
   const app = createApp({ mapKey: KEY, snapshotDir: SNAP_DIR, fetchImpl: mockFetch(CSV) });
   it('health, missions, config, 404', async () => {

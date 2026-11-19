@@ -16,7 +16,7 @@ import {
   SOLAR_OPTIONS,
 } from '@ofw/simulation';
 import { FirmsService, FirmsServiceError } from './services/firmsService';
-import { firmsAreaQuerySchema } from './validation/schemas';
+import { firmsAreaBaseSchema, firmsAreaQuerySchema } from './validation/schemas';
 import type { FetchLike } from './providers/firmsProvider';
 
 export interface AppOptions {
@@ -85,6 +85,16 @@ export function createApp(opts: AppOptions = {}) {
   app.get('/api/firms/area', rateLimit, async (req, res) => {
     const parsed = firmsAreaQuerySchema.safeParse(req.query);
     if (!parsed.success) {
+      // A dated request for exactly a bundled mission snapshot is a local file read, not an
+      // upstream query, so the span limit does not apply (M08 and M10 are wider than 20°).
+      const base = firmsAreaBaseSchema.safeParse(req.query);
+      if (base.success && base.data.date) {
+        const snap = firms.snapshotFor(base.data, 'Bundled mission snapshot served directly (area wider than the live-query limit; NASA FIRMS was not queried).');
+        if (snap) {
+          res.json(snap);
+          return;
+        }
+      }
       res.status(400).json({ error: 'INVALID_QUERY', message: 'Invalid FIRMS area query.', issues: parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })) });
       return;
     }
