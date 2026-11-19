@@ -53,4 +53,7 @@
 | 49 | Engine-state visuals (eclipse, link, zones, latitude limit) are drawn on the Leaflet map, not added to the 3D model | Operations happens on the map, and Update 1 says critical state must not exist only in 3D. The 3D model already reflects every component choice and the deployment | Yes |
 | 50 | The link beam is drawn only while the engine's `transmitting` flag is set | Update 1 asks for no decorative beams | No |
 | 51 | New procedural sounds: "warn" (design valid with warnings) and "downlink" (downlink started) | Fill gaps S04 and S10 in the Update 1 audio list; still Web Audio, no files | Yes |
+| 52 | On screens 980 px wide or narrower, operations shows the map first and pins the action bar to the bottom of the screen | Update 1: on mobile, prioritise the map, status and actions; the queue list had pushed the map below the fold | Yes |
+| 53 | Decorative map markers (satellite, pass, zone and latitude labels) are not keyboard-focusable | Leaflet made them unnamed tab stops; target markers stay focusable and named | Yes |
+| 54 | The operations target visuals keep the same object identity until a target changes state | The map was rebuilding every target marker on every frame | No |
 

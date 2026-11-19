@@ -1901,3 +1901,29 @@ select {
   border: 1px dashed var(--amber);
   vertical-align: middle;
 }
+
+/* Operations on narrow screens: map and status first, actions always reachable */
+@media (max-width: 980px) {
+  .ops-map {
+    order: 1;
+  }
+  .ops-right {
+    order: 2;
+  }
+  .ops-left {
+    order: 3;
+  }
+  .ops-screen {
+    padding-bottom: 140px;
+  }
+  .ops-bottom .action-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 900;
+    padding: var(--s2) var(--s3);
+    background: var(--deck);
+    border-top: 1px solid var(--rail-2);
+  }
+}

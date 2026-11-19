@@ -12,4 +12,6 @@
 - **M06 imagery:** MODIS Terra on 2026-11-16 has a diagonal swath gap across the region at mission zoom (seen in the browser). NOAA-20 was blank that far north in November.
 - **Rendering:** the game pauses when the browser stops animation frames (hidden tab or minimised window).
 - **Untested:** the WebGL-unavailable fallbacks (2D satellite and Earth SVG) are implemented but were not tested on a non-WebGL device. Playwright end-to-end tests are not included; UI flows were checked manually in a browser.
+- **Dev-server performance:** `npm run dev` uses React development mode, and long missions (M10) can stutter there. The production build ran smoothly at 134–141 fps in testing. Judge performance with `npm run build` and `npm start`.
+- **Not re-tested in Update 1:** the NASA GIBS imagery fallback (Blue Marble, then a neutral grid) when imagery cannot load, and the WebGL-unavailable fallback. Both are unchanged since they were built.
 - **Bundle size:** the JS bundle is about 1.18 MB (329 kB gzip), mostly Three.js and Leaflet.

@@ -303,7 +303,7 @@ function Operations({ run }: { run: MissionRun }) {
     return () => window.removeEventListener('keydown', onKey);
   }, [run, selected, cmd, doCapture, skipToNext]);
 
-  const visuals = useMemo(() => {
+  const visualsRaw = useMemo(() => {
     const v: Record<string, TargetVisual> = {};
     for (const t of targets) {
       const st = s.targetStatus[t.id];
@@ -320,6 +320,10 @@ function Operations({ run }: { run: MissionRun }) {
     return v;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [targets, s.step, s.packets.length, s.events.length, s.queue]);
+  // Keep the same object while no target changes state, so the map does not rebuild markers every frame.
+  const visualsKey = targets.map((t) => visualsRaw[t.id]).join('|');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const visuals = useMemo(() => visualsRaw, [visualsKey]);
 
   const batFrac = s.batteryWh / spec.batteryWh;
   const stoFrac = s.storageUsedMB / spec.storageMB;

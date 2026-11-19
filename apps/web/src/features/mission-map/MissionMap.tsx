@@ -269,6 +269,7 @@ export function MissionMap(props: Props) {
       L.marker([b.north, b.west], {
         pane: 'sim',
         interactive: false,
+        keyboard: false,
         icon: L.divIcon({ className: '', html: `<div class="zone-tag">${z.label}</div>`, iconSize: [10, 10], iconAnchor: [0, 0] }),
       }).addTo(L_.stations);
     }
@@ -289,6 +290,7 @@ export function MissionMap(props: Props) {
         L.marker([lim, (b.west + b.east) / 2], {
           pane: 'sim',
           interactive: false,
+          keyboard: false,
           icon: L.divIcon({ className: '', html: `<div class="lat-tag">orbit limit ${lim.toFixed(1)}°</div>`, iconSize: [10, 10], iconAnchor: [0, 14] }),
         }).addTo(L_.stations);
       }
@@ -335,6 +337,7 @@ export function MissionMap(props: Props) {
       L.marker([geometry.lat[mid], geometry.lon[mid]], {
         pane: 'sim',
         interactive: false,
+        keyboard: false,
         icon: L.divIcon({ className: '', html: `<div class="chev" style="transform:rotate(${(br * 180) / Math.PI}deg)">▲</div><div class="pass-tag">Pass ${p.index + 1}${geometry.sunlit[mid] ? '' : ' · eclipse'}</div>`, iconSize: [14, 14], iconAnchor: [7, 7] }),
       }).addTo(L_.track);
     }
@@ -366,6 +369,7 @@ export function MissionMap(props: Props) {
           L_.sat = L.marker([lat, lon], {
             pane: 'satellite',
             interactive: false,
+            keyboard: false,
             icon: L.divIcon({
               className: '',
               html: `<div class="sat-mk"><svg viewBox="-16 -16 32 32" width="34" height="34"><rect x="-14" y="-3" width="9" height="6" fill="#16305e" stroke="#9aa3ad"/><rect x="5" y="-3" width="9" height="6" fill="#16305e" stroke="#9aa3ad"/><rect x="-4.5" y="-5" width="9" height="10" rx="1.5" fill="#d4ad55" stroke="#f3dc9a"/><path d="M0 -12 L3 -7 L-3 -7 Z" fill="#3fd0e0"/></svg></div>`,
@@ -399,6 +403,7 @@ export function MissionMap(props: Props) {
         const fx = L.marker([t.lat, t.lon], {
           pane: 'satellite',
           interactive: false,
+          keyboard: false,
           icon: L.divIcon({ className: '', html: `<div class="fx-${kind}${reducedMotion ? ' still' : ''}"></div>`, iconSize: [80, 80], iconAnchor: [40, 40] }),
         }).addTo(L_.fx);
         setTimeout(() => fx.remove(), 1300);
@@ -411,7 +416,7 @@ export function MissionMap(props: Props) {
         const k = Math.min(step, geometry.nSteps - 1);
         const from = L.latLng(geometry.lat[k], geometry.lon[k]);
         const to = L.latLng(g.lat, g.lon);
-        const mk = L.marker(from, { pane: 'satellite', interactive: false, icon: L.divIcon({ className: '', html: '<div class="pkt"></div>', iconSize: [8, 8], iconAnchor: [4, 4] }) }).addTo(L_.fx);
+        const mk = L.marker(from, { pane: 'satellite', interactive: false, keyboard: false, icon: L.divIcon({ className: '', html: '<div class="pkt"></div>', iconSize: [8, 8], iconAnchor: [4, 4] }) }).addTo(L_.fx);
         const t0 = performance.now();
         const anim = () => {
           const u = Math.min(1, (performance.now() - t0) / 700);
