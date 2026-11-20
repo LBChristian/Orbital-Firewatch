@@ -7,6 +7,8 @@ import { sfx } from '../../game/audio/sfx';
 import { loadFeed } from '../../game/data/feed';
 import { buildMissionTargets, useGame, type FeedMode } from '../../game/state/store';
 import { MissionMap } from '../mission-map/MissionMap';
+import { KaiCard } from '../../components/KaiCard';
+import { kaiBrief } from '../../game/content/kai';
 
 export function BriefingScreen() {
   const missionId = useGame((s) => s.missionId);
@@ -15,6 +17,7 @@ export function BriefingScreen() {
   const targets = useGame((s) => s.targets);
   const setTargets = useGame((s) => s.setTargets);
   const go = useGame((s) => s.go);
+  const expert = useGame((s) => s.settings.expertView);
   const server = useGame((s) => s.serverStatus);
   const notify = useGame((s) => s.notify);
   const m = getMission(missionId);
@@ -79,6 +82,13 @@ export function BriefingScreen() {
 
         <div className="briefing-grid">
           <section className="briefing-text">
+            {(() => { const b = kaiBrief(m); return (
+              <KaiCard lines={[{ label: "Goal", text: b.goal }, { label: "Watch out", text: b.watch }, { label: "Tip", text: b.tip }]}>
+                <p className="tiny muted kai-foot">Orange dots are real NASA hot-spot detections, not fire outlines or danger ratings. Your satellite is simulated.</p>
+              </KaiCard>
+            ); })()}
+            <details className="more" open={expert}>
+            <summary>Full briefing</summary>
             <h3>Objective</h3>
             <p className="objective-line">{m.objective.text}</p>
             {m.secondary && m.secondary.length > 0 && (
@@ -143,6 +153,7 @@ export function BriefingScreen() {
               <br />
               <span className="small">{DISCLAIMER_SAFETY}</span>
             </div>
+            </details>
           </section>
 
           <section className="briefing-data">

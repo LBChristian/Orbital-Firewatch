@@ -57,3 +57,7 @@
 | 53 | Decorative map markers (satellite, pass, zone and latitude labels) are not keyboard-focusable | Leaflet made them unnamed tab stops; target markers stay focusable and named | Yes |
 | 54 | The operations target visuals keep the same object identity until a target changes state | The map was rebuilding every target marker on every frame | No |
 
+| 55 | Simple "mission desk" by default; today's detailed screens become Expert view (Settings, or the button on each screen) | Players new to space tech found the screens too wordy; judges can still see every number and source | Yes |
+| 56 | Dispatch-style ideas only: short target cards with timers, a five-point stat shape, one main action, a controller's one-line voice. No names, art, characters or text from any game | Readability without copying another game | No |
+| 57 | Kai, an original fictional flight controller, speaks in short rule-based lines picked from run state (apps/web/src/game/content/kai.ts); dry, light Gen Z humour, never jokes on a failure | Every line stays true for the run; tested for length and for never calling a detection dangerous | Yes |
+| 58 | Science commendation now also requires the mission to be complete | A battery-floor optional goal was "met" by ending a mission before it started | No |

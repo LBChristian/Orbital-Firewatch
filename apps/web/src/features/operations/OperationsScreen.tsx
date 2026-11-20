@@ -7,6 +7,7 @@ import { useGame } from '../../game/state/store';
 import { MissionMap, type MapHandle, type TargetVisual } from '../mission-map/MissionMap';
 import { TargetDetail } from '../mission-map/TargetDetail';
 import { Timeline } from './Timeline';
+import { DeskView } from './DeskView';
 
 type Speed = 0 | 1 | 2 | 4;
 
@@ -47,6 +48,7 @@ function Operations({ run }: { run: MissionRun }) {
   const setSettings = useGame((s) => s.setSettings);
   const notify = useGame((s) => s.notify);
   const openCodex = useGame((s) => s.openCodex);
+  const expert = useGame((s) => s.settings.expertView);
   const [, force] = useReducer((x: number) => x + 1, 0);
   const [speed, setSpeed] = useState<Speed>(1);
   const speedRef = useRef<Speed>(1);
@@ -344,6 +346,29 @@ function Operations({ run }: { run: MissionRun }) {
     return w ? `opens ${formatMet(w.startStep, g.stepS)} · ${d} km now` : `${d} km`;
   };
 
+  if (!expert) {
+    return (
+      <DeskView
+        run={run}
+        env={env}
+        speed={speed}
+        setSpeed={setSpeed}
+        cmd={cmd}
+        skipToNext={skipToNext}
+        canSkip={!s.ended && ph !== 'focus'}
+        finishRun={finishRun}
+        needsDownlink={needsDownlink}
+        contactNow={contactNow}
+        contactNext={contactNext}
+        visuals={visuals}
+        selected={selected}
+        setSelected={setSelected}
+        mapHandle={mapHandle}
+        onExpert={() => setSettings({ expertView: true })}
+      />
+    );
+  }
+
   return (
     <div className="ops-screen">
       <header className="ops-top">
@@ -374,6 +399,9 @@ function Operations({ run }: { run: MissionRun }) {
           </Button>
         </div>
         <div className="ops-data">{env && <StateBadge state={env.state} />}</div>
+        <Button size="sm" variant="ghost" onClick={() => setSettings({ expertView: false })}>
+          Simple view
+        </Button>
         <Button size="sm" variant="ghost" onClick={() => openCodex()}>
           Help
         </Button>

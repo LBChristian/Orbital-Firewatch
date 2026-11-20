@@ -6,6 +6,8 @@ import { sfx } from '../../game/audio/sfx';
 import { useGame } from '../../game/state/store';
 import { MissionMap, type TargetVisual } from './MissionMap';
 import { TargetDetail } from './TargetDetail';
+import { KaiCard } from '../../components/KaiCard';
+import { kaiBrief, stars } from '../../game/content/kai';
 
 type StatusFilter = 'all' | 'queued' | 'reachable' | 'unreachable';
 
@@ -19,6 +21,7 @@ export function PlanningScreen() {
   const queue = useGame((s) => s.queue);
   const setQueue = useGame((s) => s.setQueue);
   const go = useGame((s) => s.go);
+  const expert = useGame((s) => s.settings.expertView);
   const coach = useGame((s) => s.settings.coach);
   const setSettings = useGame((s) => s.setSettings);
   const m = getMission(missionId);
@@ -119,8 +122,8 @@ export function PlanningScreen() {
         <section className="plan-list" aria-label="Target queue">
           <div className="list-head">
             <h3>Capture queue</h3>
-            <p className="tiny muted">Auto-observe captures queued targets in this order when they are in reach. Untick a target to leave it out.</p>
-            <div className="filters">
+            <p className="tiny muted">Ticked targets get captured, top first.</p>
+            {expert && <div className="filters">
               <label>
                 <span className="sr-only">Confidence filter</span>
                 <select value={conf} onChange={(e) => setConf(e.target.value as typeof conf)}>
@@ -138,7 +141,7 @@ export function PlanningScreen() {
                   <option value="unreachable">Out of reach</option>
                 </select>
               </label>
-            </div>
+            </div>}
           </div>
           <ol className="target-list">
             {visible.map((t) => {
@@ -151,14 +154,18 @@ export function PlanningScreen() {
                     <span className="trow-top">
                       <span className="callsign">{t.callsign}</span>
                       <span className="mono prio" title="GAME PRIORITY">
-                        {t.priority.total}
+                        {expert ? t.priority.total : <span className="call-stars" aria-label={`${stars(t)} of 3 stars`}>{'★'.repeat(stars(t))}</span>}
                       </span>
                     </span>
+                    {!expert ? (
+                      <span className="tiny muted">{rr ? (geometry && geometry.passes.length > 1 ? `in view on pass ${rr.pass + 1}` : 'in view') : 'out of reach'}</span>
+                    ) : (
                     <span className="tiny muted">
                       {q >= 0 ? `#${q + 1} · ` : 'not queued · '}
                       {rr ? `pass ${rr.pass + 1}, ${rr.km} km from track` : `out of reach (${minDist[t.id] ?? '?'} km)`}
                       {t.zone ? ` · ${t.zone.toLowerCase()}` : ''}
                     </span>
+                    )}
                   </button>
                   {q >= 0 && (
                     <span className="reorder">
@@ -232,6 +239,15 @@ export function PlanningScreen() {
               ))}
             </fieldset>
           )}
+          <KaiCard
+            lines={[
+              { label: "Reach", text: geometry ? `${Object.values(reach).filter(Boolean).length} of ${targets.length} targets come into view${geometry.passes.length > 1 ? ` over ${geometry.passes.length} passes` : ""}.` : "This orbit never reaches the region. Change it in the design bay." },
+              { label: "Fits", text: `About ${Math.min(Math.floor(spec.storageMB / spec.dataMBPerCapture), Math.floor(usableWh / spec.captureWh))} captures before memory or battery runs out. You queued ${queuedReachable.length}.` },
+              { label: "Tip", text: kaiBrief(m).tip },
+            ]}
+          />
+          <details className="more" open={expert}>
+            <summary>Plan details</summary>
           <div className="panel">
             <div className="panel-head">
               <h4>Predicted plan</h4>
@@ -296,6 +312,7 @@ export function PlanningScreen() {
               )}
             </div>
           </div>
+          </details>
           {sel ? (
             <div className="panel">
               <div className="panel-body">

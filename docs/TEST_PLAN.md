@@ -149,3 +149,9 @@ Defects found and fixed during testing:
 - Playwright end-to-end tests.
 - Audio output was not listened to; generation code paths only.
 - Full M03 playthrough in the browser. It is covered by the engine tests, and the browser runs the same engine.
+
+## Dispatch-style redesign (branch redesign/dispatch-desk, 2026-11-21)
+
+- `apps/web/src/game/content/kai.test.ts` (6 tests): every mission has a 3-line briefing of at most 16 words per line; target cards give 1-3 stars and never use danger words; "room for" is the tighter of memory and battery; Kai always has a line of at most 18 words through whole M01, M04 and M08 runs; Kai asks to send when a station is listening and auto-downlink is off; debrief lines come from the report.
+- Browser (dev server, M04, simple view): visible words per screen briefing 127, design 187, plan 180 (was 331 before row shortening), operations desk 61, debrief 86. Desk at 375 px: no horizontal scroll, Kai bar pinned at the bottom. Ending early gives "You ended the mission before it played out" and no Science badge.
+- Not done: Kai's lines were not reviewed by a native Gen Z player; expert view was only spot-checked after the change.

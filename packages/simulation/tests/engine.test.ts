@@ -254,7 +254,7 @@ describe('commendations', () => {
     r.runToEnd();
     const rep = computeScore(r);
     expect(rep.secondary.map((s) => s.id)).toEqual(['eleven']);
-    expect(rep.commendations.find((x) => x.id === 'science')!.met).toBe(rep.secondary[0].met);
+    expect(rep.commendations.find((x) => x.id === "science")!.met).toBe(rep.success && rep.secondary[0].met);
   });
 
   it('Engineering requires every design check at PASS', () => {

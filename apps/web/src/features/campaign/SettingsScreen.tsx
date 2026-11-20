@@ -15,7 +15,7 @@ function Slider({ label, k }: { label: string; k: 'master' | 'sfx' | 'ambient' }
   );
 }
 
-function Toggle({ label, k, hint }: { label: string; k: 'muted' | 'reducedMotion' | 'mapDim' | 'coach' | 'unlockAll'; hint: string }) {
+function Toggle({ label, k, hint }: { label: string; k: 'muted' | 'reducedMotion' | 'mapDim' | 'coach' | 'unlockAll' | 'expertView'; hint: string }) {
   const v = useGame((s) => s.settings[k]);
   const setSettings = useGame((s) => s.setSettings);
   return (
@@ -90,6 +90,7 @@ export function SettingsScreen() {
           <h3>Display</h3>
           <Toggle label="Reduce motion" k="reducedMotion" hint="Stops pulsing, idle rotation and the deployment animation." />
           <Toggle label="Dim map imagery" k="mapDim" hint="Darkens satellite imagery so data layers stand out." />
+          <Toggle label="Expert view" k="expertView" hint="Show every number, unit, source and log on every screen. Off keeps things short." />
           <Toggle label="Show coaching tips" k="coach" hint="Short hints in early missions and when an action is waiting on you." />
         </section>
         <section className="settings-group">

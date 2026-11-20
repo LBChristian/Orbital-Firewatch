@@ -280,7 +280,8 @@ export function commendations(run: MissionRun, r: ScoreReport): Commendation[] {
     onBoard > 0 ? `${onBoard} packet(s) never delivered` : '',
   ].filter(Boolean);
   const sec = r.secondary;
-  const science = sec.length > 0 ? sec.every((x) => x.met) : r.counts.DELIVERED >= mission.referenceCount;
+  // Optional goals only count on a completed mission (a battery floor is trivially "met" if you never fly).
+  const science = r.success && (sec.length > 0 ? sec.every((x) => x.met) : r.counts.DELIVERED >= mission.referenceCount);
   const list: Commendation[] = [
     { id: 'complete', label: 'Mission Complete', criterion: 'Meet the primary objective.', met: r.success, detail: r.objective.detail },
     {
@@ -293,7 +294,7 @@ export function commendations(run: MissionRun, r: ScoreReport): Commendation[] {
     {
       id: 'science',
       label: 'Science Commendation',
-      criterion: sec.length > 0 ? 'Meet every secondary objective.' : `Deliver at least ${mission.referenceCount} target groups.`,
+      criterion: sec.length > 0 ? 'Complete the mission and meet every secondary objective.' : `Complete the mission and deliver at least ${mission.referenceCount} target groups.`,
       met: science,
       detail: sec.length > 0 ? sec.map((x) => `${x.text} ${x.met ? 'Met' : 'Not met'} (${x.detail}).`).join(' ') : `${r.counts.DELIVERED} delivered.`,
     },

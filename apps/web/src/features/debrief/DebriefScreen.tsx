@@ -1,3 +1,5 @@
+import { KaiCard } from '../../components/KaiCard';
+import { kaiDebrief } from '../../game/content/kai';
 import { useEffect, useMemo, useState } from 'react';
 import { CAMPAIGN_MISSION_IDS, CML_CITATION, CML_ITERATION_NOTE, cmlLevel, formatMet, getMission, missionAvailability, type GameEvent } from '@ofw/simulation';
 import { Cite, CmlTrack } from '../../components/Citation';
@@ -47,6 +49,7 @@ export function DebriefScreen() {
   const selectMission = useGame((s) => s.selectMission);
   const progress = useGame((s) => s.progress[s.missionId]);
   const [showAll, setShowAll] = useState(false);
+  const expert = useGame((s) => s.settings.expertView);
   const m = getMission(missionId);
   const allProgress = useGame((s) => s.progress);
   const unlockAll = useGame((s) => s.settings.unlockAll);
@@ -88,7 +91,7 @@ export function DebriefScreen() {
               {m.code} {m.name} debrief
             </p>
             <h1>{report.success ? 'Mission objective met' : 'Mission incomplete'}</h1>
-            <p className="lede">{report.objective.detail}. {m.objective.text}</p>
+            {expert && <p className="lede">{report.objective.detail}. {m.objective.text}</p>}
             {env?.state === 'SYNTHETIC DEMO' && <p className="small txt-syn">Flown on SYNTHETIC DEMO training data; not recorded in mission progress.</p>}
           </div>
           <div className="grade-block" aria-label={`Score ${report.total} of 100, grade ${report.grade}`}>
@@ -123,6 +126,19 @@ export function DebriefScreen() {
           </Button>
         </div>
 
+        {(() => { const d = kaiDebrief(report, run.state.events.some((e) => e.type === "mission-end" && e.message.startsWith("Operator ended"))); return (
+          <KaiCard lines={[{ label: "What", text: d.what }, { label: "Why", text: d.why }, { label: "Try next", text: d.next }]}>
+            <ul className="badge-row" aria-label="Commendations">
+              {report.commendations.map((c) => (
+                <li key={c.id} className={c.met ? "earned" : ""} title={c.criterion}>
+                  {c.met ? "✓ " : ""}{c.label.replace(" Commendation", "")}
+                </li>
+              ))}
+            </ul>
+          </KaiCard>
+        ); })()}
+        <details className="more" open={expert}>
+        <summary>Full report: score, objective check, targets, timeline</summary>
         <div className="debrief-grid">
           <section className="panel">
             <div className="panel-head">
@@ -373,6 +389,7 @@ export function DebriefScreen() {
             </ol>
           </section>
         </div>
+        </details>
       </main>
     </div>
   );

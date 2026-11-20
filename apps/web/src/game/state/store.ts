@@ -60,6 +60,8 @@ export interface Settings {
   assistObserve: AssistSetting;
   /** Assisted downlink: follow the mission default, or force on/off. */
   assistDownlink: AssistSetting;
+  /** Show the detailed panels (numbers, units, event log) instead of the simple desk. */
+  expertView: boolean;
 }
 
 const prefersReducedMotion =
@@ -76,6 +78,7 @@ const DEFAULT_SETTINGS: Settings = {
   unlockAll: false,
   assistObserve: 'mission',
   assistDownlink: 'mission',
+  expertView: false,
 };
 
 function load<T>(key: string, fallback: T): T {

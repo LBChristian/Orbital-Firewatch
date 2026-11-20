@@ -1,3 +1,6 @@
+import { KaiCard } from '../../components/KaiCard';
+import { StatShape } from '../../components/StatShape';
+import { kaiBrief } from '../../game/content/kai';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ALTITUDE_OPTIONS,
@@ -53,6 +56,7 @@ function optionStats(key: keyof Loadout, id: string): string {
 
 function Picker({ k, label, options, value, launched, onPick, topic }: { k: keyof Loadout; label: string; options: Opt[]; value: string; launched?: string; onPick: (id: string) => void; topic?: string }) {
   const sel = options.find((o) => o.id === value);
+  const expert = useGame((s) => s.settings.expertView);
   const changed = launched !== undefined && launched !== value;
   return (
     <fieldset className="picker">
@@ -80,9 +84,14 @@ function Picker({ k, label, options, value, launched, onPick, topic }: { k: keyo
       </div>
       {sel && (
         <p className="picker-desc small">
-          <span>{sel.description}</span> {sel.why && <span className="muted">{sel.why}</span>}
-          {sel.massKg !== undefined && <span className="mono faint picker-stats">{optionStats(k, sel.id)}</span>}
-          <SourceNote c={SUBSYSTEM_CITATIONS[k]} />
+          <span>{sel.description}</span>
+          {expert && (
+            <>
+              {" "}{sel.why && <span className="muted">{sel.why}</span>}
+              {sel.massKg !== undefined && <span className="mono faint picker-stats">{optionStats(k, sel.id)}</span>}
+              <SourceNote c={SUBSYSTEM_CITATIONS[k]} />
+            </>
+          )}
         </p>
       )}
     </fieldset>
@@ -99,6 +108,7 @@ export function DesignBay() {
   const patchLoadout = useGame((s) => s.patchLoadout);
   const go = useGame((s) => s.go);
   const reducedMotion = useGame((s) => s.settings.reducedMotion);
+  const expert = useGame((s) => s.settings.expertView);
   const m = getMission(missionId);
   const validation = useMemo(() => validateDesign(loadout, m), [loadout, m]);
   const spec = validation.spec;
@@ -143,6 +153,8 @@ export function DesignBay() {
         <section className="design-left" aria-label="Subsystem choices">
           <header className="design-head">
             <h2>Satellite design bay</h2>
+            <KaiCard lines={[{ label: "Goal", text: kaiBrief(m).goal }, { label: "Tip", text: kaiBrief(m).tip }]} />
+            {expert && (<>
             <p className="small muted">Every value here is a notional game parameter, not a real specification or price. Notes under each choice cite NASA&rsquo;s CubeSat 101 guide.</p>
             <div className="cml-head">
               <CmlTrack level={m.cml.level} />
@@ -150,6 +162,7 @@ export function DesignBay() {
                 Design stage: CML {m.cml.level} {cmlLevel(m.cml.level).name}. {m.cml.focus} <InfoTip topic="cml" />
               </p>
             </div>
+            </>)}
           </header>
           <div className="orbit-pickers">
             <Picker k="altitudeId" label="Orbit altitude" options={ALTITUDE_OPTIONS.map((a) => ({ ...a, short: a.label }))} value={loadout.altitudeId} launched={launched?.altitudeId} onPick={pick('altitudeId')} topic="orbit" />
@@ -185,6 +198,9 @@ export function DesignBay() {
               <SimBadge>FICTIONAL SPACECRAFT</SimBadge>
             </div>
           </div>
+          {!expert ? (
+            <StatShape spec={spec} previous={launched ? validateDesign(launched, m).spec : undefined} />
+          ) : (
           <div className="spec-strip">
             <div>
               <span className="muted small">Orbital period</span>
@@ -211,6 +227,7 @@ export function DesignBay() {
               <span className="mono">{fmtNum(spec.downlinkMBPerMin)} MB/min</span>
             </div>
           </div>
+          )}
           {changedKeys.length > 0 && (
             <p className="small changed-line">
               Changed since your last launch: {changedKeys.map((k) => KEY_LABEL[k]).join(', ')}.

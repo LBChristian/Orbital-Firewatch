@@ -17,7 +17,7 @@ Ten missions in three chapters, each built on one day of real NASA FIRMS detecti
 | II Operational Pressure | M04 Shadow Line, M05 Dead Air, M06 Polar Watch, M07 Signal Triage | Eclipse power, contact time, latitude reach, target triage |
 | III Mission Assurance | M08 Second Look, M09 Hard Limits, M10 Final Firewatch | Multi-pass planning, hard design limits, everything together |
 
-Chapter I is played in order, then Chapter II opens all at once, then Chapter III in order. A mission counts as complete when its objective is met; your grade never locks anything. Settings → "Open all missions (practice)" opens every mission. From Chapter II, you start downlinks yourself (an assist setting can change that).
+Chapter I is played in order, then Chapter II opens all at once, then Chapter III in order. A mission counts as complete when its objective is met; your grade never locks anything. Settings → "Open all missions (practice)" opens every mission. Screens start in a short, simple view with Kai, your flight controller; switch on Expert view for every number and source. From Chapter II, you start downlinks yourself (an assist setting can change that).
 
 Challenge 13 listed resources used: NASA CubeSat 101 (design-bay notes with page citations) and JPL Concept Maturity Levels (campaign stages CML 2–4). FIRMS and GIBS are extra NASA data services, not on that list. See [docs/CHALLENGE_RESOURCE_COMPLIANCE.md](docs/CHALLENGE_RESOURCE_COMPLIANCE.md).
 
@@ -105,7 +105,7 @@ docs/                 Product, architecture, science, provenance, compliance, te
 
 ## 30-second demo path
 
-1. Title → **Start campaign** → M01 briefing shows 85 real FIRMS detections (HISTORICAL, 16 Nov 2026). **Campaign** shows all ten missions in three chapters; Settings → "Open all missions (practice)" opens every mission.
+1. Title → **Start campaign** → M01 briefing shows 85 real FIRMS detections (HISTORICAL, 16 Nov 2026). **Campaign** shows all ten missions in three chapters; Settings → "Open all missions (practice)" opens every mission. Screens start in a short, simple view with Kai, your flight controller; switch on Expert view for every number and source.
 2. **Accept mission** → Design bay: switch the payload to High Detail and watch the swath shrink and the telescope grow. Press **Validate design**, then **Reset to recommended**.
 3. **Continue** → Plan: the cyan swath crosses the target field; one target is marked out of reach.
 4. **Launch** → Operations: captures fire as targets enter the swath, and packets downlink to GS SIERRA.
