@@ -4,11 +4,6 @@ import { Cite, CmlTrack } from '../../components/Citation';
 import { Button, Meter, SimBadge, StateBadge, TopBar, fmtNum } from '../../components/ui';
 import { sfx } from '../../game/audio/sfx';
 import { useGame } from '../../game/state/store';
-import { ControllerLine } from '../../components/Controller';
-import { voiceFor } from '../../game/content/missionVoice';
-
-/** Short badge names for the commendations row. */
-const BADGE: Record<string, string> = { complete: 'Complete', engineering: 'Engineer', science: 'Scientist', operations: 'Operator', perfect: 'Perfect' };
 
 const TIMELINE_TYPES = new Set<GameEvent['type']>([
   'pass-start',
@@ -82,9 +77,6 @@ export function DebriefScreen() {
   }
   const g = run.config.geometry;
   const spec = run.config.spec;
-  const v = voiceFor(m.id);
-  // The first analyst note that names a problem is the "why"; its suggestion is "try next".
-  const key = report.analyst.find((n) => n.severity === 'critical' || n.severity === 'warn') ?? report.analyst[0];
 
   return (
     <div className="screen">
@@ -93,9 +85,10 @@ export function DebriefScreen() {
         <header className={`debrief-head ${report.success ? 'win' : 'lose'}`}>
           <div>
             <p className="mono faint">
-              {m.code} {m.name}
+              {m.code} {m.name} debrief
             </p>
-            <h1 className="stamp">{report.success ? 'Mission complete' : 'Not yet'}</h1>
+            <h1>{report.success ? 'Mission objective met' : 'Mission incomplete'}</h1>
+            <p className="lede">{report.objective.detail}. {m.objective.text}</p>
             {env?.state === 'SYNTHETIC DEMO' && <p className="small txt-syn">Flown on SYNTHETIC DEMO training data; not recorded in mission progress.</p>}
           </div>
           <div className="grade-block" aria-label={`Score ${report.total} of 100, grade ${report.grade}`}>
@@ -104,36 +97,6 @@ export function DebriefScreen() {
             <span className="tiny muted">of 100{progress ? ` · best ${progress.bestScore}` : ''}</span>
           </div>
         </header>
-
-        <ControllerLine text={report.success ? v.say.win : v.say.lose} tone={report.success ? 'good' : 'urgent'} />
-
-        <ul className="badges" aria-label="Commendations">
-          {report.commendations.map((c) => (
-            <li key={c.id} className={c.met ? 'on' : 'off'} title={`${c.label}: ${c.criterion}`}>
-              <span aria-hidden="true">{c.met ? '★' : '☆'}</span> {BADGE[c.id] ?? c.label}
-              <span className="sr-only">{c.met ? ' earned' : ' not earned'}</span>
-            </li>
-          ))}
-        </ul>
-
-        <dl className="debrief-summary">
-          <dt>Result</dt>
-          <dd>{report.objective.detail}</dd>
-          {key && !report.success && (
-            <>
-              <dt>Why</dt>
-              <dd>{key.finding}</dd>
-              <dt>Try next</dt>
-              <dd>{key.suggestion}</dd>
-            </>
-          )}
-          {report.success && report.secondary.some((o) => !o.met) && (
-            <>
-              <dt>Bonus</dt>
-              <dd>{report.secondary.find((o) => !o.met)!.text}</dd>
-            </>
-          )}
-        </dl>
 
         <div className="debrief-actions">
           <Button
@@ -160,8 +123,6 @@ export function DebriefScreen() {
           </Button>
         </div>
 
-        <details className="more">
-          <summary>Full report: score, checks, targets and timeline</summary>
         <div className="debrief-grid">
           <section className="panel">
             <div className="panel-head">
@@ -412,7 +373,6 @@ export function DebriefScreen() {
             </ol>
           </section>
         </div>
-        </details>
       </main>
     </div>
   );

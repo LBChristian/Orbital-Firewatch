@@ -19,24 +19,6 @@ import { Button, Meter, SimBadge, TopBar, fmtNum } from '../../components/ui';
 import { sfx } from '../../game/audio/sfx';
 import { useGame } from '../../game/state/store';
 import { SatelliteViewer } from '../../three/SatelliteViewer';
-import { ControllerLine } from '../../components/Controller';
-import { StatShape } from '../../components/StatShape';
-import { voiceFor } from '../../game/content/missionVoice';
-import { designStats } from '../../game/stats';
-
-/** Plain names first; the engineering name is kept in the tooltip. */
-const PLAIN: Record<keyof Loadout, string> = {
-  busId: 'Body',
-  payloadId: 'Camera',
-  solarId: 'Solar panels',
-  batteryId: 'Battery',
-  recorderId: 'Memory',
-  commsId: 'Radio',
-  pointingId: 'Aiming',
-  launchId: 'Rocket',
-  altitudeId: 'Height',
-  inclinationId: 'Orbit tilt',
-};
 
 const KEY_LABEL: Record<keyof Loadout, string> = {
   busId: 'Bus',
@@ -69,13 +51,13 @@ function optionStats(key: keyof Loadout, id: string): string {
   return parts.join(' · ');
 }
 
-function Picker({ k, label, options, value, launched, onPick, topic, specs }: { k: keyof Loadout; label: string; options: Opt[]; value: string; launched?: string; onPick: (id: string) => void; topic?: string; specs: boolean }) {
+function Picker({ k, label, options, value, launched, onPick, topic }: { k: keyof Loadout; label: string; options: Opt[]; value: string; launched?: string; onPick: (id: string) => void; topic?: string }) {
   const sel = options.find((o) => o.id === value);
   const changed = launched !== undefined && launched !== value;
   return (
     <fieldset className="picker">
-      <legend title={label}>
-        {PLAIN[k]}
+      <legend>
+        {label}
         {changed && <span className="changed-dot" title="Changed since your last launch">changed</span>}
         {topic && <InfoTip topic={topic} />}
       </legend>
@@ -98,15 +80,9 @@ function Picker({ k, label, options, value, launched, onPick, topic, specs }: { 
       </div>
       {sel && (
         <p className="picker-desc small">
-          <span>{sel.description}</span>
-          {specs && (
-            <>
-              {' '}
-              {sel.why && <span className="muted">{sel.why}</span>}
-              {sel.massKg !== undefined && <span className="mono faint picker-stats">{optionStats(k, sel.id)}</span>}
-              <SourceNote c={SUBSYSTEM_CITATIONS[k]} />
-            </>
-          )}
+          <span>{sel.description}</span> {sel.why && <span className="muted">{sel.why}</span>}
+          {sel.massKg !== undefined && <span className="mono faint picker-stats">{optionStats(k, sel.id)}</span>}
+          <SourceNote c={SUBSYSTEM_CITATIONS[k]} />
         </p>
       )}
     </fieldset>
@@ -129,9 +105,6 @@ export function DesignBay() {
   const prevSpec = useRef(spec);
   const [ghost, setGhost] = useState(spec);
   const [shown, setShown] = useState(false);
-  const [specs, setSpecs] = useState(false);
-  const v = voiceFor(m.id);
-  const stats = useMemo(() => designStats(spec), [spec]);
   const r = resolveLoadout(loadout);
 
   useEffect(() => {
@@ -169,24 +142,17 @@ export function DesignBay() {
       <main className="design-grid">
         <section className="design-left" aria-label="Subsystem choices">
           <header className="design-head">
-            <h2>Build your satellite</h2>
-            <ControllerLine text={v.say.design} />
-            <label className="toggle specs-toggle">
-              <input type="checkbox" checked={specs} onChange={(e) => setSpecs(e.target.checked)} />
-              <span>Show specs and sources</span>
-            </label>
-            {specs && (
-              <div className="cml-head">
-                <p className="small muted">Every value here is a notional game parameter, not a real specification or price. Notes under each choice cite NASA&rsquo;s CubeSat 101 guide.</p>
-                <CmlTrack level={m.cml.level} />
-                <p className="tiny muted">
-                  Design stage: CML {m.cml.level} {cmlLevel(m.cml.level).name}. {m.cml.focus} <InfoTip topic="cml" />
-                </p>
-              </div>
-            )}
+            <h2>Satellite design bay</h2>
+            <p className="small muted">Every value here is a notional game parameter, not a real specification or price. Notes under each choice cite NASA&rsquo;s CubeSat 101 guide.</p>
+            <div className="cml-head">
+              <CmlTrack level={m.cml.level} />
+              <p className="tiny muted">
+                Design stage: CML {m.cml.level} {cmlLevel(m.cml.level).name}. {m.cml.focus} <InfoTip topic="cml" />
+              </p>
+            </div>
           </header>
           <div className="orbit-pickers">
-            <Picker k="altitudeId" label="Orbit altitude" options={ALTITUDE_OPTIONS.map((a) => ({ ...a, short: a.label }))} value={loadout.altitudeId} launched={launched?.altitudeId} onPick={pick('altitudeId')} topic="orbit" specs={specs} />
+            <Picker k="altitudeId" label="Orbit altitude" options={ALTITUDE_OPTIONS.map((a) => ({ ...a, short: a.label }))} value={loadout.altitudeId} launched={launched?.altitudeId} onPick={pick('altitudeId')} topic="orbit" />
             <Picker
               k="inclinationId"
               label="Orbit inclination"
@@ -195,7 +161,6 @@ export function DesignBay() {
               launched={launched?.inclinationId}
               onPick={pick('inclinationId')}
               topic="orbit"
-              specs={specs}
             />
           </div>
           {SUBSYSTEMS.map((s) => (
@@ -207,16 +172,12 @@ export function DesignBay() {
               value={loadout[s.key]}
               launched={launched?.[s.key]}
               onPick={pick(s.key)}
-              specs={specs}
               topic={s.key === 'payloadId' ? 'swath' : s.key === 'recorderId' ? 'storage' : s.key === 'commsId' ? 'downlink' : s.key === 'batteryId' || s.key === 'solarId' ? 'power' : undefined}
             />
           ))}
         </section>
 
         <section className="design-center" aria-label="Satellite preview">
-          <div className="shape-wrap">
-            <StatShape stats={stats} needs={v.needs} size={260} />
-          </div>
           <div className="viewer-wrap">
             <SatelliteViewer loadout={loadout} reducedMotion={reducedMotion} />
             <div className="viewer-caption">
@@ -224,7 +185,7 @@ export function DesignBay() {
               <SimBadge>FICTIONAL SPACECRAFT</SimBadge>
             </div>
           </div>
-          {specs && <div className="spec-strip">
+          <div className="spec-strip">
             <div>
               <span className="muted small">Orbital period</span>
               <span className="mono">{spec.periodMin.toFixed(1)} min</span>
@@ -249,7 +210,7 @@ export function DesignBay() {
               <span className="muted small">Downlink</span>
               <span className="mono">{fmtNum(spec.downlinkMBPerMin)} MB/min</span>
             </div>
-          </div>}
+          </div>
           {changedKeys.length > 0 && (
             <p className="small changed-line">
               Changed since your last launch: {changedKeys.map((k) => KEY_LABEL[k]).join(', ')}.
@@ -260,16 +221,13 @@ export function DesignBay() {
         <aside className="design-right" aria-label="Engineering budget">
           <div className="panel">
             <div className="panel-head">
-              <h4>Budget</h4>
+              <h4>Engineering budget</h4>
               <span className="tiny muted">dashed = before last change</span>
             </div>
             <div className="panel-body budget">
-              <Meter label="Weight on the rocket" value={spec.massKg} max={spec.launchCapacityKg} ghost={ghost.massKg} display={`${spec.massKg} / ${spec.launchCapacityKg} kg`} tone={spec.massKg > spec.launchCapacityKg ? 'crit' : spec.massMarginFrac < 0.1 ? 'warn' : undefined} />
-              {specs && (<>
+              <Meter label="Launch mass" value={spec.massKg} max={spec.launchCapacityKg} ghost={ghost.massKg} display={`${spec.massKg} / ${spec.launchCapacityKg} kg`} tone={spec.massKg > spec.launchCapacityKg ? 'crit' : spec.massMarginFrac < 0.1 ? 'warn' : undefined} />
               <Meter label="Bus structure" value={spec.subsystemMassKg} max={spec.structureCapacityKg} ghost={ghost.subsystemMassKg} display={`${spec.subsystemMassKg} / ${spec.structureCapacityKg} kg`} tone={spec.subsystemMassKg > spec.structureCapacityKg ? 'crit' : undefined} />
-              </>)}
-              <Meter label="Money" value={spec.cost} max={spec.budget} ghost={ghost.cost} mark={recSpec.cost} display={`${spec.cost} / ${spec.budget} cr`} tone={spec.cost > spec.budget ? 'crit' : spec.budgetMarginFrac < 0.05 ? 'warn' : undefined} title="White tick: recommended design cost" />
-              {specs && (<>
+              <Meter label="Credits" value={spec.cost} max={spec.budget} ghost={ghost.cost} mark={recSpec.cost} display={`${spec.cost} / ${spec.budget} cr`} tone={spec.cost > spec.budget ? 'crit' : spec.budgetMarginFrac < 0.05 ? 'warn' : undefined} title="White tick: recommended design cost" />
               <Meter label="Solar generation (sunlight)" value={spec.solarW} max={240} ghost={ghost.solarW} mark={loadsW} display={`${spec.solarW} W`} tone={spec.orbitAvgBalanceW < 0 ? 'crit' : spec.orbitAvgBalanceW < 15 ? 'warn' : 'go'} title="White tick: continuous housekeeping load" />
               <Meter label="Battery" value={spec.batteryWh} max={200} ghost={ghost.batteryWh} display={`${spec.batteryWh} Wh · ~${spec.capturesPerFullBattery} captures`} />
               <Meter label="Payload draw while capturing" value={spec.payloadPowerW} max={120} ghost={ghost.payloadPowerW} display={`${spec.payloadPowerW} W`} />
@@ -282,13 +240,12 @@ export function DesignBay() {
                 {r.pointing.edgeFactor < 1 ? `, edge captures x${r.pointing.edgeFactor}` : `, +${r.pointing.extraReachKm} km reach`}. Orbit-average power balance {spec.orbitAvgBalanceW >= 0 ? '+' : ''}
                 {spec.orbitAvgBalanceW.toFixed(0)} W.
               </p>
-              </>)}
             </div>
           </div>
 
           <div className="panel validation" aria-live="polite">
             <div className="panel-head">
-              <h4>Checks</h4>
+              <h4>Design checks</h4>
               <span className={`tiny ${fails.length ? 'txt-crit' : warns.length ? 'txt-warn' : 'txt-go'}`}>
                 {fails.length ? `${fails.length} failing` : warns.length ? `${warns.length} warning${warns.length > 1 ? 's' : ''}` : 'all passing'}
               </span>
@@ -304,7 +261,7 @@ export function DesignBay() {
                   </span>
                 </li>
               ))}
-              {!shown && validation.checks.every((c) => c.level === 'pass') && <li className="check-hint small muted">All good. Nothing blocks launch.</li>}
+              {!shown && validation.checks.every((c) => c.level === 'pass') && <li className="check-hint small muted">Press Validate design to see every check.</li>}
             </ul>
             <div className="panel-body row-gap">
               <Button
@@ -313,15 +270,15 @@ export function DesignBay() {
                   sfx(!validation.ok ? 'reject' : validation.checks.some((c) => c.level === 'warn') ? 'warn' : 'lock');
                 }}
               >
-                Show all checks
+                Validate design
               </Button>
               <Button variant="ghost" onClick={() => setLoadout({ ...m.recommended })}>
-                Reset to suggested
+                Reset to recommended
               </Button>
             </div>
           </div>
           <Button variant="primary" size="big" onClick={proceed} disabled={shown && !validation.ok} sound={false}>
-            {validation.ok ? 'Continue to the plan' : 'Fix the red checks first'}
+            {validation.ok ? 'Continue to mission plan' : 'Fix failing checks to continue'}
           </Button>
         </aside>
       </main>

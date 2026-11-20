@@ -7,7 +7,7 @@ Results recorded on 2026-11-18 with Node 26.13.0 (test counts updated 2026-11-19
 | Command | Result |
 |---|---|
 | `npm run typecheck` | Pass (exit 0) |
-| `npm run test` | **184 passed / 184** (8 files) |
+| `npm run test` | **179 passed / 179** (7 files) |
 | `npm run balance` | Runs all 10 missions plus the documented strategy table. M01–M03 output is identical to the pre-Update-1 baseline, and no documented strategy differs from its expected result |
 | `npm run build` | Pass. Web built by Vite; API bundled to `apps/api/dist/server.js` (38 kB) |
 | Secret scan of `apps/web/dist` | No `FIRMS_MAP_KEY` or key values; the web bundle never references the FIRMS Area API |
@@ -97,14 +97,6 @@ Coverage by area:
 - Each documented strategy (35 in all) passes hard design validation and produces its expected success or fail against the bundled snapshot.
 - For each mission, at least one documented strategy meets every optional goal.
 
-### `apps/web/src/game/opsGuide.test.ts` (5 tests, simplified screens)
-
-- Through a full M05 run with manual sending, the main action goes from Skip ahead to Send data. Ines says "Station in range. Send the data now." exactly when sending is needed, and the action ends on Open debrief with her win or lose line.
-- With Auto-send on (M01), Send data is never offered.
-- With manual capture, Capture is offered whenever a queued target is in view and the camera is free; while travelling, the action is Skip ahead.
-- Every mission has a goal, a warning, a tip and controller lines of 15 words or fewer.
-- The stat shape follows the parts. A larger battery raises Battery but larger solar panels do not. M04's suggested battery sits below the mission's battery need and the extended battery meets it.
-
 ### `apps/api/tests/api.test.ts` (27 tests)
 
 - URL construction: W,S,E,N order and the date form; redacted URL.
@@ -131,7 +123,6 @@ Coverage by area:
 | CML track on briefing (M02 = CML 3), 10 cited notes in the design bay, CML feedback-loop note on a failed debrief; no console errors | Pass |
 | Stage B (2026-11-19): title screen shows snapshot dates and retrieval from the v2 manifest; Data & sources lists all 10 snapshots with per-snapshot retrieval and imagery; M01 briefing still loads 85 detections offline (API stopped) with retrieval 2026-11-17 | Pass |
 | Stage C (2026-11-19, 800×600 and 375×812): a v1 save migrates to v2 and the title shows "Continue: M02". The campaign shows Chapter I in order and Chapter II locked with "Complete M02, M03 to open Chapter II". The practice setting opens all 10. M06 briefing loads 14 targets offline with the gas-flare caveat and provisional note. M10 loads 4,661 detections into 20 groups in about 0.6 s. A corrupt save resets with a notice and a backup copy. No horizontal scroll at 375 px. The only console errors were 502s from the API proxy, because only the web server was running | Pass |
-| Simplified screens (2026-11-20), visible words before → after at 1440×900, with the "More" sections closed: briefing 345 → 125, design 831 → 173, plan 268 → 227, operations 410 → 217, debrief 578 → 85. At 375×812 no screen overflows, the design shape comes first, and Ines's line sits above the map clear of the pinned action bar | Pass |
 | Stage I (2026-11-20), production: `NODE_ENV=production` server. `/`, `/campaign` and `/api/health` return 200; `/api/missions` returns 10. Every mission's dated snapshot request returns HISTORICAL with the manifest row count and retrieval time. The M10 briefing in the browser loads 4,661 detections with no console errors. Secret scan of `apps/web/dist` is clean | Pass |
 | Stage H (2026-11-20), viewports and accessibility: at 375×812, title, campaign, briefing, design, plan, operations and debrief (M10) have no horizontal scroll and no unnamed visible controls. After the fixes, operations at 375 px shows the map first with the action bar pinned (all four actions visible). 768×1024 and 1024×768: no horizontal scroll; at 1024 the map is 504×339 px. Keyboard: Tab shows the cyan focus ring. Reduced motion puts the reduced-motion class on the root element and drops transitions to about 0 | Pass |
 | Stage H (2026-11-20), performance: in the dev server inside the app's browser pane, M10 operations ran at 4–21 fps with 50–1,000 ms long tasks (M01 had 50–100 ms tasks too). In a production build (`vite preview`), M10 ran at 134–141 fps, paused or at 4×, with no long tasks. The cost is React development mode. Also fixed: target markers were rebuilt every frame | Pass |

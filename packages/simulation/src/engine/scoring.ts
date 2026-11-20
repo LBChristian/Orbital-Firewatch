@@ -326,18 +326,6 @@ export function missionAnalyst(run: MissionRun, r: ScoreReport): AnalystNote[] {
   const notes: AnalystNote[] = [];
   const met = (step: number | undefined) => (step === undefined ? '' : ` at ${formatMet(step, dt)}`);
 
-  // Ended by the operator while target windows were still ahead.
-  const endedByOperator = s.commandLog.some((c) => c.command.type === 'endMission');
-  const windowsAhead = geometry.windows.filter((w) => w.startStep > s.step).length;
-  if (endedByOperator && windowsAhead > 0) {
-    notes.push({
-      id: 'ended-early',
-      severity: 'critical',
-      finding: `The mission was ended at ${formatMet(s.step, dt)}, before ${windowsAhead} target window(s) had opened.`,
-      suggestion: 'Fly again and let the pass happen. Use Skip ahead to save time instead of ending the mission.',
-    });
-  }
-
   // Storage saturation
   const storageBlocked = r.counts['MISSED: RECORDER FULL'];
   if (s.stats.capturesRejectedStorage > 0 || storageBlocked > 0) {
@@ -380,7 +368,7 @@ export function missionAnalyst(run: MissionRun, r: ScoreReport): AnalystNote[] {
         id: 'unused-contact',
         severity: 'warn',
         finding: `Downlink was active for only ${Math.round(r.downlink.activeS)} s of ${Math.round(r.downlink.contactS)} s of contact while ${stored.length} packet(s) waited on board${s.stats.safeModeSteps > 0 ? ' (safe mode blocked part of it)' : ''}.`,
-        suggestion: 'Turn on Auto-send, or press Send data whenever a station is in range.',
+        suggestion: 'Keep AUTO-DOWNLINK on or press BEGIN DOWNLINK whenever a station is in view.',
       });
     }
   }
@@ -452,7 +440,7 @@ export function missionAnalyst(run: MissionRun, r: ScoreReport): AnalystNote[] {
       id: 'contention',
       severity: 'info',
       finding: `${inReachNotCaptured} target group(s) were in reach but never captured. Each capture occupies the payload for ${spec.captureS} s, and targets that were not queued are not captured automatically.`,
-      suggestion: 'Tick the targets you want before launch and use "Do this one next" during the pass; a faster camera captures more per pass.',
+      suggestion: 'Queue the targets you want before launch and use PRIORITIZE NEXT during the pass; a faster payload profile captures more per pass.',
     });
   }
 

@@ -7,9 +7,6 @@ import { sfx } from '../../game/audio/sfx';
 import { loadFeed } from '../../game/data/feed';
 import { buildMissionTargets, useGame, type FeedMode } from '../../game/state/store';
 import { MissionMap } from '../mission-map/MissionMap';
-import { ControllerLine } from '../../components/Controller';
-import { StatShape } from '../../components/StatShape';
-import { voiceFor } from '../../game/content/missionVoice';
 
 export function BriefingScreen() {
   const missionId = useGame((s) => s.missionId);
@@ -22,7 +19,6 @@ export function BriefingScreen() {
   const notify = useGame((s) => s.notify);
   const m = getMission(missionId);
   const chapter = chapterOf(m.id);
-  const v = voiceFor(m.id);
 
   const load = useCallback(
     async (mode: FeedMode, refresh = false) => {
@@ -32,9 +28,7 @@ export function BriefingScreen() {
         const t = buildMissionTargets(m, r.envelope);
         setFeed({ status: 'ready', mode, envelope: r.envelope, notes: r.notes });
         setTargets(t);
-        // Only interrupt the player when live data they asked for could not be loaded; other
-        // notes (such as the static-file fallback) are listed under Full briefing and data.
-        if (mode === 'live' && r.notes.length) notify(r.notes[r.notes.length - 1], 'warn');
+        if (r.notes.length) notify(r.notes[r.notes.length - 1], 'warn');
       } catch (e) {
         setFeed({ status: 'error', mode, error: (e as Error).message });
         setTargets([]);
@@ -58,85 +52,31 @@ export function BriefingScreen() {
         <header className="briefing-head">
           <div>
             <p className="mission-code mono">
-              {m.code} · Chapter {chapter.numeral} · {m.regionName}
+              Mission {m.code} · Chapter {chapter.numeral} {chapter.title} · difficulty {'▮'.repeat(m.difficulty)}
+              {'▯'.repeat(3 - m.difficulty)}
             </p>
             <h1>{m.name}</h1>
+            <p className="lede">{m.tagline}</p>
           </div>
           <div className="briefing-actions">
             <Button variant="ghost" onClick={() => go('campaign')}>
               Campaign
             </Button>
-
+            <Button
+              variant="primary"
+              size="big"
+              disabled={feed.status !== 'ready' || targets.length === 0}
+              sound={false}
+              onClick={() => {
+                sfx('accept');
+                go('design');
+              }}
+            >
+              Accept mission
+            </Button>
           </div>
         </header>
 
-        <ControllerLine text={v.say.brief} />
-
-        <div className="mission-card">
-          <div className="mc-map">
-            <MissionMap mission={m} detections={env?.detections ?? []} targets={targets} compact fitTo="region" />
-            {feed.status === 'loading' && <p className="mc-status muted small">Loading hot spots…</p>}
-            {feed.status === 'ready' && env && (
-              <p className="mc-status small">
-                <StateBadge state={env.state} /> {env.count} NASA hot spots on {m.firms.date} → {targets.length} targets
-              </p>
-            )}
-          </div>
-          <div className="mc-cards">
-            <div className="mc-item mc-goal">
-              <h3>Goal</h3>
-              <p>{v.goal}</p>
-            </div>
-            <div className="mc-item mc-watch">
-              <h3>Watch out</h3>
-              <p>{v.watch}</p>
-            </div>
-            <div className="mc-item mc-tip">
-              <h3>Tip</h3>
-              <p>{v.tip}</p>
-            </div>
-            <div className="mc-item mc-needs">
-              <h3>This mission leans on</h3>
-              <StatShape needs={v.needs} size={170} compact />
-            </div>
-          </div>
-        </div>
-
-        {feed.status === 'error' && (
-          <div className="callout crit">
-            <p>{feed.error}</p>
-            <div className="row-gap">
-              <Button size="sm" onClick={() => load('snapshot')}>
-                Retry
-              </Button>
-              <Button size="sm" onClick={() => load('synthetic')}>
-                Use SYNTHETIC DEMO training data
-              </Button>
-            </div>
-          </div>
-        )}
-
-        <div className="brief-go">
-          <Button
-            variant="primary"
-            size="big"
-            disabled={feed.status !== 'ready' || targets.length === 0}
-            sound={false}
-            onClick={() => {
-              sfx('accept');
-              go('design');
-            }}
-          >
-            Accept mission
-          </Button>
-        </div>
-
-        <p className="disclaimer-line brief-safety">
-          Each dot is a NASA FIRMS hot spot seen from space: a hot pixel, not a fire outline or a danger rating. <InfoTip topic="firms" />
-        </p>
-
-        <details className="more">
-          <summary>Full briefing and data</summary>
         <div className="briefing-grid">
           <section className="briefing-text">
             <h3>Objective</h3>
@@ -211,8 +151,31 @@ export function BriefingScreen() {
                 <h4>Target data</h4>
                 {env && <StateBadge state={env.state} />}
               </div>
+              <div className="panel-body brief-map-wrap">
+                <MissionMap
+                  mission={m}
+                  detections={env?.detections ?? []}
+                  targets={targets}
+                  compact
+                 
+                  fitTo="region"
+                />
+              </div>
               <div className="panel-body">
                 {feed.status === 'loading' && <p className="muted">Loading FIRMS detections for {m.regionName}…</p>}
+                {feed.status === 'error' && (
+                  <div className="callout crit">
+                    <p>{feed.error}</p>
+                    <div className="row-gap">
+                      <Button size="sm" onClick={() => load('snapshot')}>
+                        Retry
+                      </Button>
+                      <Button size="sm" onClick={() => load('synthetic')}>
+                        Use SYNTHETIC DEMO training data
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 {env && feed.status === 'ready' && (
                   <dl className="kv small">
                     <dt>Region</dt>
@@ -279,7 +242,6 @@ export function BriefingScreen() {
             </div>
           </section>
         </div>
-        </details>
       </main>
     </div>
   );

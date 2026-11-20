@@ -7,11 +7,6 @@ import { useGame } from '../../game/state/store';
 import { MissionMap, type MapHandle, type TargetVisual } from '../mission-map/MissionMap';
 import { TargetDetail } from '../mission-map/TargetDetail';
 import { Timeline } from './Timeline';
-import { ControllerLine } from '../../components/Controller';
-import { controllerSays, mainAction } from '../../game/opsGuide';
-
-/** GAME PRIORITY as 1–3 stars: a game value, not fire danger. */
-const stars = (priority: number) => (priority >= 90 ? 3 : priority >= 75 ? 2 : 1);
 
 type Speed = 0 | 1 | 2 | 4;
 
@@ -29,7 +24,7 @@ function phase(run: MissionRun): keyof typeof RATE {
   return 'coast';
 }
 
-const PHASE_LABEL: Record<keyof typeof RATE, string> = { focus: 'Target in view', pass: 'Over the area', contact: 'Station in range', coast: 'Travelling' };
+const PHASE_LABEL: Record<keyof typeof RATE, string> = { focus: 'Targets in reach', pass: 'Over region', contact: 'Ground contact', coast: 'Coasting' };
 
 export function OperationsScreen() {
   const run = useGame((s) => s.run);
@@ -47,16 +42,16 @@ export function OperationsScreen() {
 
 function Operations({ run }: { run: MissionRun }) {
   const finishRun = useGame((s) => s.finishRun);
-  const coach = useGame((s) => s.settings.coach);
   const env = useGame((s) => s.feed.envelope);
+  const coach = useGame((s) => s.settings.coach);
+  const setSettings = useGame((s) => s.setSettings);
   const notify = useGame((s) => s.notify);
   const openCodex = useGame((s) => s.openCodex);
   const [, force] = useReducer((x: number) => x + 1, 0);
   const [speed, setSpeed] = useState<Speed>(1);
   const speedRef = useRef<Speed>(1);
   speedRef.current = speed;
-  // Nothing is selected until the player picks a target, so the data card stays out of the way.
-  const [selected, setSelected] = useState<string | null>(null);
+  const [selected, setSelected] = useState<string | null>(run.state.queue[0] ?? null);
   const mapHandle = useRef<MapHandle | null>(null);
   const lastEvent = useRef(0);
   const endTimer = useRef<number | null>(null);
@@ -336,70 +331,17 @@ function Operations({ run }: { run: MissionRun }) {
 
   const statusText = (id: string): string => {
     const v = visuals[id];
-    if (v === 'inwindow') return `in view · ${run.stepsUntilWindowCloses(id) * g.stepS} s left`;
+    const d = Math.round(run.distanceKm(id));
+    if (v === 'inwindow') return `in reach · ${d} km · closes in ${run.stepsUntilWindowCloses(id) * g.stepS} s`;
     if (v === 'capturing') return 'capturing…';
-    if (v === 'stored') return s.packets.find((p) => p.targetId === id)?.status === 'TRANSMITTING' ? 'sending…' : 'saved, not sent yet';
-    if (v === 'delivered') return 'sent ✓';
-    if (v === 'lost') return 'deleted (memory full)';
+    if (v === 'stored') return `stored · ${s.packets.find((p) => p.targetId === id)?.status.toLowerCase()}`;
+    if (v === 'delivered') return 'delivered';
+    if (v === 'lost') return 'packet lost (overwritten)';
     if (v === 'skipped') return 'skipped';
-    if (v === 'missed') return 'missed';
-    if (v === 'unreachable') return 'out of reach';
+    if (v === 'missed') return 'window passed, not captured';
+    if (v === 'unreachable') return 'never in reach';
     const w = g.windows.find((x) => x.targetId === id && x.startStep > s.step);
-    if (!w) return 'no more chances';
-    const min = Math.round(((w.startStep - s.step) * g.stepS) / 60);
-    return min < 1 ? 'in view soon' : `in view in ${min} min`;
-  };
-  const group = (id: string): 'now' | 'next' | 'done' | 'out' => {
-    const v = visuals[id];
-    if (v === 'inwindow' || v === 'capturing') return 'now';
-    if (v === 'stored' || v === 'delivered') return 'done';
-    if (v === 'queued' || v === 'available') return 'next';
-    return 'out';
-  };
-  const nextOrder = (id: string) => g.windows.find((x) => x.targetId === id && x.startStep > s.step)?.startStep ?? Infinity;
-  const groups = {
-    now: targets.filter((t) => group(t.id) === 'now'),
-    next: targets.filter((t) => group(t.id) === 'next').sort((a, b) => nextOrder(a.id) - nextOrder(b.id)),
-    done: targets.filter((t) => group(t.id) === 'done'),
-    out: targets.filter((t) => group(t.id) === 'out'),
-  };
-
-  // Ines's line and the main button come from opsGuide (pure, tested functions of engine state).
-  const ctl = controllerSays(run);
-  const selInView = !!sel && visuals[sel.id] === 'inwindow';
-  const kind = mainAction(run, selInView);
-  const firstTarget = firstInReach ? targets.find((t) => t.id === firstInReach) : undefined;
-  const main: { label: string; kbd: string; run: () => void; disabled?: boolean } =
-    kind === 'debrief'
-      ? { label: 'Open debrief', kbd: '', run: () => finishRun() }
-      : kind === 'send'
-        ? { label: 'Send data', kbd: 'D', run: () => cmd({ type: 'beginDownlink' }) }
-        : kind === 'capture'
-          ? { label: `Capture ${selInView ? sel!.callsign : firstTarget?.callsign ?? ''}`.trim(), kbd: 'C', run: doCapture }
-          : kind === 'skip'
-            ? { label: 'Skip ahead', kbd: 'N', run: skipToNext }
-            : { label: s.capture ? 'Capturing…' : 'Waiting…', kbd: '', run: () => {}, disabled: true };
-
-  const renderRow = (t: (typeof targets)[number]) => {
-    const qi = s.queue.indexOf(t.id);
-    const n = stars(t.priority.total);
-    return (
-      <li key={t.id} className={`trow v-${visuals[t.id]} ${selected === t.id ? 'sel' : ''}`}>
-        <button className="trow-main" onClick={() => setSelected(t.id)} aria-pressed={selected === t.id}>
-          <span className="trow-top">
-            <span className="callsign">
-              {t.callsign}
-              {qi >= 0 && group(t.id) !== 'done' && <span className="qpos mono">#{qi + 1}</span>}
-            </span>
-            <span className="stars" title={`Game value ${t.priority.total} (a game score, not fire danger)`} aria-label={`Game value ${n} of 3`}>
-              {'★'.repeat(n)}
-              <span className="stars-off">{'★'.repeat(3 - n)}</span>
-            </span>
-          </span>
-          <span className="tiny trow-status">{statusText(t.id)}</span>
-        </button>
-      </li>
-    );
+    return w ? `opens ${formatMet(w.startStep, g.stepS)} · ${d} km now` : `${d} km`;
   };
 
   return (
@@ -428,7 +370,7 @@ function Operations({ run }: { run: MissionRun }) {
             </Button>
           ))}
           <Button size="sm" onClick={skipToNext} disabled={s.ended || ph === 'focus'} kbd="N" title={ph === 'focus' ? 'Targets are in reach: watch this part' : 'Coast to 30 s before the next pass, contact or target window'}>
-            Skip ahead
+            Next event
           </Button>
         </div>
         <div className="ops-data">{env && <StateBadge state={env.state} />}</div>
@@ -444,30 +386,27 @@ function Operations({ run }: { run: MissionRun }) {
         <aside className="ops-left" aria-label="Target queue">
           <div className="list-head">
             <h4>Targets</h4>
-            <span className="tiny muted">★ = game value</span>
+            <span className="tiny muted">↑↓ select · C capture · S skip · P priority</span>
           </div>
-          <div className="ops-list">
-            <h5 className="grp">In view now</h5>
-            {groups.now.length ? <ol className="target-list">{groups.now.map(renderRow)}</ol> : <p className="tiny muted grp-empty">Nothing in view.</p>}
-            {groups.next.length > 0 && (
-              <>
-                <h5 className="grp">Coming up</h5>
-                <ol className="target-list">{groups.next.map(renderRow)}</ol>
-              </>
-            )}
-            {groups.done.length > 0 && (
-              <>
-                <h5 className="grp">Captured</h5>
-                <ol className="target-list">{groups.done.map(renderRow)}</ol>
-              </>
-            )}
-            {groups.out.length > 0 && (
-              <details className="grp-out">
-                <summary className="tiny muted">Out of reach or missed ({groups.out.length})</summary>
-                <ol className="target-list">{groups.out.map(renderRow)}</ol>
-              </details>
-            )}
-          </div>
+          <ol className="target-list ops-list">
+            {targets.map((t) => {
+              const qi = s.queue.indexOf(t.id);
+              return (
+                <li key={t.id} className={`trow v-${visuals[t.id]} ${selected === t.id ? 'sel' : ''}`}>
+                  <button className="trow-main" onClick={() => setSelected(t.id)} aria-pressed={selected === t.id}>
+                    <span className="trow-top">
+                      <span className="callsign">
+                        {t.callsign}
+                        {qi >= 0 && <span className="qpos mono">#{qi + 1}</span>}
+                      </span>
+                      <span className="mono prio">{t.priority.total}</span>
+                    </span>
+                    <span className="tiny trow-status">{statusText(t.id)}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ol>
         </aside>
 
         <section className="ops-map">
@@ -494,12 +433,19 @@ function Operations({ run }: { run: MissionRun }) {
           {!s.safeMode && stationIdx >= 0 && !needsDownlink && <div className="map-alert go">{m.groundStations[stationIdx].name} in view{s.transmitting ? `: transmitting at ${spec.downlinkMbps} Mbps` : ''}</div>}
           {needsDownlink && (
             <div className="map-alert warn" role="status">
-              {m.groundStations[stationIdx].name.replace(' (notional)', '')} in range, {fmtNum(pendingMB)} MB waiting. Press D to send.
+              {m.groundStations[stationIdx].name} in view and {fmtNum(pendingMB)} MB waiting. Auto-downlink is off: press D or Begin downlink.
             </div>
           )}
-          {(coach || ctl.tone === 'urgent' || s.ended) && (
-            <div className="ops-voice">
-              <ControllerLine text={ctl.text} tone={ctl.tone} />
+          {coach && m.difficulty === 1 && !s.ended && (
+            <div className="coach ops-coach" role="note">
+              {ph === 'coast' && s.step < (g.passes[0]?.startStep ?? 0) && <p>The satellite is approaching the region. Auto-observe will capture queued targets as they enter the swath, or select one and press Capture.</p>}
+              {ph === 'focus' && <p>Targets are inside your swath. Each capture uses the payload for {spec.captureS} s, {spec.dataMBPerCapture} MB of recorder and {spec.captureWh.toFixed(1)} Wh.</p>}
+              {ph === 'pass' && <p>Over the region. Watch the window countdowns in the target list.</p>}
+              {ph === 'contact' && <p>A ground station can hear the satellite. Stored packets downlink highest value first; delivered data is what scores.</p>}
+              {ph === 'coast' && s.step >= (g.passes[0]?.startStep ?? 0) && <p>Coasting between events. Press Next event (N) to jump ahead. Speed never changes the outcome.</p>}
+              <Button size="sm" variant="ghost" onClick={() => setSettings({ coach: false })}>
+                Hide tips
+              </Button>
             </div>
           )}
           {s.ended && (
@@ -531,20 +477,20 @@ function Operations({ run }: { run: MissionRun }) {
                   {s.stats.minBatteryWh / spec.batteryWh < reserveFrac ? ' (broken)' : ''}
                 </p>
               )}
-              <Meter label={<>Memory <InfoTip topic="storage" /></>} value={s.storageUsedMB} max={spec.storageMB} mark={spec.storageMB * 0.8} display={`${fmtNum(s.storageUsedMB)} / ${fmtNum(spec.storageMB)} MB`} tone={stoFrac >= 1 - 1e-9 ? 'crit' : stoFrac > 0.8 ? 'warn' : undefined} />
+              <Meter label={<>Recorder <InfoTip topic="storage" /></>} value={s.storageUsedMB} max={spec.storageMB} mark={spec.storageMB * 0.8} display={`${fmtNum(s.storageUsedMB)} / ${fmtNum(spec.storageMB)} MB`} tone={stoFrac >= 1 - 1e-9 ? 'crit' : stoFrac > 0.8 ? 'warn' : undefined} />
               <p className="tiny tele-line">
                 <span className={stationIdx >= 0 ? 'txt-go' : 'muted'}>{stationIdx >= 0 ? `Link up: ${m.groundStations[stationIdx].name.replace(' (notional)', '')}` : 'No ground station in view'}</span>
                 <span className="muted"> · radio {s.transmitting ? `TX ${spec.downlinkMbps} Mbps` : 'idle'}</span>
               </p>
               <p className="tiny muted">
-                Camera {s.capture ? <span className="txt-signal">capturing {targets.find((t) => t.id === s.capture!.targetId)?.callsign}</span> : 'ready'}
+                Payload {s.capture ? <span className="txt-signal">capturing {targets.find((t) => t.id === s.capture!.targetId)?.callsign}</span> : 'ready'} · mass {spec.massKg} kg (fixed after launch)
               </p>
             </div>
           </div>
 
           <div className="panel link">
             <div className="panel-head">
-              <h4>Next up</h4>
+              <h4>Passes and contacts</h4>
               <span className="tiny muted">from the orbit model</span>
             </div>
             <div className="panel-body">
@@ -566,21 +512,22 @@ function Operations({ run }: { run: MissionRun }) {
                       ? `${stationName(contactNext.stationId)} at ${formatMet(contactNext.startStep, g.stepS)}, ${(contactNext.endStep - contactNext.startStep + 1) * g.stepS} s, about ${fmtNum(capMB(contactNext.endStep - contactNext.startStep + 1))} MB`
                       : 'no more contacts'}
                 </dd>
-                <dt title="Capacity = radio rate x seconds left / 8 (simulation estimate)">Waiting</dt>
+                <dt>Waiting</dt>
                 <dd className={contactNow && pendingMB > capMB(contactNow.endStep - s.step) ? 'txt-warn' : ''}>
                   {fmtNum(pendingMB)} MB in {pending.length} packet{pending.length === 1 ? '' : 's'}
                 </dd>
               </dl>
+              <p className="tiny faint">Capacity = radio rate x seconds left / 8. Simulation estimate.</p>
             </div>
           </div>
 
           <div className="panel modes">
             <div className="panel-body row-gap">
               <Button size="sm" aria-pressed={s.autoObserve} onClick={() => cmd({ type: 'setAutoObserve', on: !s.autoObserve })} kbd="A">
-                Auto-capture
+                Auto-observe
               </Button>
               <Button size="sm" aria-pressed={s.autoDownlink} onClick={() => cmd({ type: 'setAutoDownlink', on: !s.autoDownlink })}>
-                Auto-send
+                Auto-downlink
               </Button>
               <Button size="sm" aria-pressed={s.overwriteLowest} onClick={toggleOverwrite} title="When the recorder is full, overwrite the lowest-value stored packet instead of rejecting the new capture. Asks for confirmation.">
                 Overwrite when full
@@ -591,7 +538,7 @@ function Operations({ run }: { run: MissionRun }) {
           <div className="panel packets">
             <div className="panel-head">
               <h4>
-                Data to send <InfoTip topic="downlink" />
+                Data packets <InfoTip topic="downlink" />
               </h4>
               <span className="tiny muted">
                 {s.packets.filter((p) => p.status === 'DELIVERED').length} delivered · {pending.length} waiting
@@ -633,39 +580,34 @@ function Operations({ run }: { run: MissionRun }) {
 
       <footer className="ops-bottom">
         <div className="action-bar" role="toolbar" aria-label="Mission actions">
-          <Button variant="primary" size="big" className="main-action" onClick={main.run} disabled={main.disabled} kbd={main.kbd || undefined} sound={false}>
-            {main.label}
+          <Button variant="primary" onClick={doCapture} disabled={s.ended || !!s.capture || s.safeMode} kbd="C" sound={false}>
+            Capture {sel && s.targetStatus[sel.id] !== 'CAPTURED' ? sel.callsign : firstInReach ? targets.find((t) => t.id === firstInReach)?.callsign : ''}
           </Button>
           <Button onClick={() => selected && cmd({ type: 'skip', targetId: selected })} disabled={!selected || s.ended} kbd="S">
-            Skip target
+            Skip
           </Button>
           <Button onClick={() => selected && cmd({ type: 'prioritize', targetId: selected })} disabled={!selected || s.ended} kbd="P">
-            Do this one next
+            Prioritize next
           </Button>
           {s.transmitting ? (
             <Button variant="warn" onClick={() => cmd({ type: 'stopDownlink' })} kbd="D">
-              Stop sending
+              Stop downlink
             </Button>
           ) : (
             <Button onClick={() => cmd({ type: 'beginDownlink' })} disabled={stationIdx < 0 || pending.length === 0 || s.ended} kbd="D">
-              Send data
+              Begin downlink
             </Button>
           )}
           <SimBadge />
         </div>
         <Timeline run={run} queuedIds={s.queue} />
-        <details className="event-log-wrap">
-          <summary className="small">
-            <span className="muted">Mission log:</span> {recent[0]?.message}
-          </summary>
-          <ol className="event-log" aria-label="Recent mission events">
-            {recent.map((e, i) => (
-              <li key={s.events.length - i} className={`ev ev-${e.severity}`}>
-                <span className="mono faint">{formatMet(e.step, g.stepS)}</span> {e.message}
-              </li>
-            ))}
-          </ol>
-        </details>
+        <ol className="event-log" aria-live="polite" aria-label="Recent mission events">
+          {recent.map((e, i) => (
+            <li key={s.events.length - i} className={`ev ev-${e.severity}`}>
+              <span className="mono faint">{formatMet(e.step, g.stepS)}</span> {e.message}
+            </li>
+          ))}
+        </ol>
       </footer>
     </div>
   );
